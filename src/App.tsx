@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AppShell } from "./components/AppShell";
 import { DinnerSummary } from "./components/DinnerSummary";
+import { DinnerTray } from "./components/DinnerTray";
 import { DishCard } from "./components/DishCard";
 import { HomeView } from "./components/HomeView";
 import { ThinkingView } from "./components/ThinkingView";
@@ -8,7 +9,7 @@ import { offlineDishes } from "./data/offlineDishes";
 import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
 import type { DinnerDish } from "./types/dinner";
-import { rankDishes } from "./utils/preferenceEngine";
+import { rankDishesByLocalPrediction } from "./utils/preferenceEngine";
 import { getRelatedDishes } from "./utils/relatedDishes";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
@@ -19,13 +20,22 @@ export default function App() {
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const [nutritionMode, setNutritionMode] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [confirmedDish, setConfirmedDish] = useState<DinnerDish | null>(null);
+  const [dinnerDishes, setDinnerDishes] = useState<DinnerDish[]>([]);
+  const [trayOpen, setTrayOpen] = useState(false);
+  const [predictionSeed, setPredictionSeed] = useState({ prompt: "", chips: [] as string[] });
   const deviceProfile = useDeviceProfile();
   const { preferences, recordFeedback } = useLocalPreferences();
 
   const rankedDishes = useMemo(
-    () => rankDishes(offlineDishes, preferences, nutritionMode),
-    [nutritionMode, preferences],
+    () =>
+      rankDishesByLocalPrediction(
+        offlineDishes,
+        preferences,
+        nutritionMode,
+        predictionSeed.prompt,
+        predictionSeed.chips,
+      ),
+    [nutritionMode, preferences, predictionSeed],
   );
 
   const currentDish = rankedDishes[currentIndex % rankedDishes.length];
@@ -47,6 +57,7 @@ export default function App() {
       selectedChips,
       nutritionMode,
     });
+    setPredictionSeed({ prompt, chips: selectedChips });
     setView("thinking");
     window.setTimeout(() => {
       setCurrentIndex(0);
@@ -65,50 +76,87 @@ export default function App() {
     }
   };
 
+  const showNextRelatedDish = (extraExcludedDishId?: string) => {
+    const excludedDishIds = new Set([...dinnerDishes.map((dish) => dish.id), extraExcludedDishId].filter(Boolean));
+    const nextDish = relatedDishes.find(({ dish }) => !excludedDishIds.has(dish.id))?.dish;
+
+    if (nextDish) {
+      showDishById(nextDish.id);
+      return;
+    }
+
+    showNextDish();
+  };
+
   const handleFeedback = (feedback: "like" | "dislike") => {
     recordFeedback(currentDish, feedback);
     showNextDish();
   };
 
-  const confirmDish = () => {
-    setConfirmedDish(currentDish);
-    setView("summary");
+  const addDishToDinner = () => {
+    const dishToAdd = currentDish;
+
+    setDinnerDishes((current) => {
+      if (current.some((dish) => dish.id === dishToAdd.id)) {
+        return current;
+      }
+
+      return [...current, dishToAdd];
+    });
+    window.setTimeout(() => showNextRelatedDish(dishToAdd.id), 820);
+    window.setTimeout(() => recordFeedback(dishToAdd, "like"), 1050);
   };
 
   const restart = () => {
-    setConfirmedDish(null);
+    setDinnerDishes([]);
+    setTrayOpen(false);
     setView("home");
   };
 
   return (
     <AppShell deviceProfile={deviceProfile}>
-      {view === "home" && (
-        <HomeView
-          prompt={prompt}
-          selectedChips={selectedChips}
-          nutritionMode={nutritionMode}
-          onPromptChange={setPrompt}
-          onToggleChip={toggleChip}
-          onNutritionModeChange={setNutritionMode}
-          onGenerate={generateRecommendations}
-        />
-      )}
-      {view === "thinking" && <ThinkingView />}
-      {view === "recommendation" && (
-        <DishCard
-          dish={currentDish}
-          nutritionMode={nutritionMode}
-          onLike={() => handleFeedback("like")}
-          onDislike={() => handleFeedback("dislike")}
-          onNext={showNextDish}
-          onConfirm={confirmDish}
-          relatedDishes={relatedDishes}
-          onSelectRelatedDish={showDishById}
-        />
-      )}
-      {view === "summary" && confirmedDish && (
-        <DinnerSummary dish={confirmedDish} nutritionMode={nutritionMode} onRestart={restart} />
-      )}
+      <div className={`main-experience flex flex-1 flex-col ${trayOpen ? "tray-background-blurred" : ""}`}>
+        {view === "home" && (
+          <HomeView
+            prompt={prompt}
+            selectedChips={selectedChips}
+            nutritionMode={nutritionMode}
+            onPromptChange={setPrompt}
+            onToggleChip={toggleChip}
+            onNutritionModeChange={setNutritionMode}
+            onGenerate={generateRecommendations}
+          />
+        )}
+        {view === "thinking" && <ThinkingView />}
+        {view === "recommendation" && (
+          <DishCard
+            dish={currentDish}
+            nutritionMode={nutritionMode}
+            onLike={() => handleFeedback("like")}
+            onDislike={() => handleFeedback("dislike")}
+            onNext={showNextDish}
+            onConfirm={addDishToDinner}
+            relatedDishes={relatedDishes}
+            onSelectRelatedDish={showDishById}
+          />
+        )}
+        {view === "summary" && dinnerDishes.length > 0 && (
+          <DinnerSummary dishes={dinnerDishes} nutritionMode={nutritionMode} onRestart={restart} />
+        )}
+      </div>
+      <DinnerTray
+        dishes={dinnerDishes}
+        open={trayOpen}
+        onOpen={() => setTrayOpen(true)}
+        onClose={() => setTrayOpen(false)}
+        onRemoveDish={(dishId) => setDinnerDishes((current) => current.filter((dish) => dish.id !== dishId))}
+        onStartDinner={() => {
+          if (dinnerDishes.length > 0) {
+            setTrayOpen(false);
+            setView("summary");
+          }
+        }}
+      />
     </AppShell>
   );
 }

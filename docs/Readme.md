@@ -4,6 +4,12 @@
 
 ---
 
+# Current Version
+
+V1.1 adds the multi-dish dinner tray, conversational recommendation labels, visible tray background blur, stronger confirm feedback, and local prediction ranking based on prompt intent, chips, and stored preferences.
+
+---
+
 # 1. Product Vision
 
 ## Problem

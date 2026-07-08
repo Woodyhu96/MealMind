@@ -24,9 +24,9 @@ export function RelatedDishRail({ relatedDishes, onSelectDish }: RelatedDishRail
             <Sparkles size={16} />
             猜你想吃
           </p>
-          <p className="mt-1 text-xs font-medium text-muted">按描述、风味和食材相似度排序</p>
+          <p className="mt-1 text-xs font-medium text-muted">越靠前越像你现在想吃的</p>
         </div>
-        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-muted">强 → 弱</span>
+        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-muted">按口味排好</span>
       </div>
 
       <div className="related-list mt-4 flex gap-2 overflow-x-auto pb-1">
@@ -39,10 +39,42 @@ export function RelatedDishRail({ relatedDishes, onSelectDish }: RelatedDishRail
             style={{ background: gradients[index] ?? gradients[gradients.length - 1] }}
           >
             <span className="block leading-5">{dish.name}</span>
-            <span className="mt-2 block text-[0.68rem] font-bold text-ink/55">关联度 {relevance}</span>
+            <span className="mt-2 block text-[0.68rem] font-bold text-ink/55">{getRelatedCue(dish, relevance, index)}</span>
           </button>
         ))}
       </div>
     </section>
   );
+}
+
+function getRelatedCue({ tags }: RelatedDish["dish"], relevance: number, index: number) {
+  if (index === 0) {
+    return "最像这口!";
+  }
+
+  if (tags.some((tag) => ["清淡", "爽口", "素菜"].includes(tag))) {
+    return "爽口搭配!";
+  }
+
+  if (tags.some((tag) => ["辣", "下饭", "黑椒", "咖喱"].includes(tag))) {
+    return "很下饭!";
+  }
+
+  if (tags.some((tag) => ["汤", "暖胃"].includes(tag))) {
+    return "暖暖的!";
+  }
+
+  if (tags.some((tag) => ["高蛋白", "牛肉", "鸡肉", "虾"].includes(tag))) {
+    return "补点能量!";
+  }
+
+  if (relevance > 75) {
+    return "最佳搭配!";
+  }
+
+  if (relevance > 60) {
+    return "人气菜品!";
+  }
+
+  return "换个口味!";
 }

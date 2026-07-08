@@ -37,6 +37,20 @@ body {
   pointer-events: none;
 }
 
+.main-experience {
+  transition:
+    filter 280ms ease,
+    opacity 280ms ease,
+    transform 280ms ease;
+}
+
+.tray-background-blurred {
+  filter: blur(10px);
+  opacity: 0.68;
+  transform: scale(0.986);
+  pointer-events: none;
+}
+
 .mode-switch {
   position: relative;
   isolation: isolate;
@@ -175,9 +189,47 @@ body {
   padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
-[data-device="iphone-safari"] .version-badge {
-  bottom: max(12px, env(safe-area-inset-bottom));
-  left: max(16px, env(safe-area-inset-left));
+.dinner-tray-button {
+  left: max(20px, env(safe-area-inset-left));
+  bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+.dish-card-surface {
+  transition:
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    opacity 360ms ease,
+    transform 360ms ease;
+}
+
+.dish-card-surface.is-confirming {
+  animation: selected-card-confirm 820ms ease both;
+  box-shadow:
+    0 0 0 5px rgba(207, 229, 213, 0.68),
+    0 22px 60px rgba(29, 29, 31, 0.1);
+}
+
+.tray-overlay {
+  animation: tray-fade-in 320ms ease-out both;
+}
+
+.tray-backdrop {
+  background: rgba(245, 245, 247, 0.58);
+  -webkit-backdrop-filter: blur(10px) saturate(1.42);
+  backdrop-filter: blur(10px) saturate(1.42);
+}
+
+.tray-overlay.is-closing {
+  animation: tray-fade-out 360ms ease-in both;
+}
+
+.tray-panel {
+  background: #ffffff;
+  animation: tray-panel-in 320ms cubic-bezier(0.2, 1, 0.3, 1) both;
+}
+
+.tray-overlay.is-closing .tray-panel {
+  animation: tray-panel-out 360ms ease-in both;
 }
 
 button,
@@ -197,5 +249,64 @@ button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes selected-card-confirm {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.012);
+  }
+  72% {
+    opacity: 0.52;
+    transform: scale(0.982);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tray-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tray-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tray-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tray-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
   }
 }

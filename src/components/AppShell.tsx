@@ -8,7 +8,7 @@ type AppShellProps = {
   deviceProfile: DeviceProfile;
 };
 
-const appVersion = "V1.0";
+const appVersion = "V1.1";
 
 export function AppShell({ children, deviceProfile }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,11 +73,11 @@ export function AppShell({ children, deviceProfile }: AppShellProps) {
                   <span className="mode-switch-thumb" />
                 </button>
               </div>
+              <div className="mt-6 border-t border-line/70 pt-4 text-right text-xs font-bold text-[#4A4A4F]">{appVersion}</div>
             </aside>
           </div>
         )}
       </div>
-      <div className="version-badge fixed bottom-4 left-4 z-30 text-xs font-bold text-[#4A4A4F]">{appVersion}</div>
     </main>
   );
 }

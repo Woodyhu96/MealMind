@@ -1,15 +1,24 @@
 import { Copy, RotateCcw } from "lucide-react";
 import type { DinnerDish } from "../types/dinner";
-import { categoryLabels, groupShoppingList } from "../utils/shoppingList";
+import { categoryLabels, groupCombinedShoppingList } from "../utils/shoppingList";
 
 type DinnerSummaryProps = {
-  dish: DinnerDish;
+  dishes: DinnerDish[];
   nutritionMode: boolean;
   onRestart: () => void;
 };
 
-export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryProps) {
-  const shoppingGroups = groupShoppingList(dish);
+export function DinnerSummary({ dishes, nutritionMode, onRestart }: DinnerSummaryProps) {
+  const shoppingGroups = groupCombinedShoppingList(dishes);
+  const totalNutrition = dishes.reduce(
+    (total, dish) => ({
+      calories: total.calories + dish.nutrition.calories,
+      proteinG: total.proteinG + dish.nutrition.proteinG,
+      fatG: total.fatG + dish.nutrition.fatG,
+      carbsG: total.carbsG + dish.nutrition.carbsG,
+    }),
+    { calories: 0, proteinG: 0, fatG: 0, carbsG: 0 },
+  );
 
   const copyPlan = async () => {
     const shoppingList = Object.entries(shoppingGroups)
@@ -19,8 +28,12 @@ export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryP
       })
       .join("\n\n");
 
+    const dishPlans = dishes
+      .map((dish) => `${dish.name}\n${dish.description}\n${dish.instructions.map((step, index) => `${index + 1}. ${step}`).join("\n")}`)
+      .join("\n\n");
+
     await navigator.clipboard.writeText(
-      `Tonight's Dinner: ${dish.name}\n\n${dish.description}\n\n${dish.recommendationReason.join("\n")}\n\n${shoppingList}`,
+      `Tonight's Dinner\n\n${dishes.map((dish) => `- ${dish.name}`).join("\n")}\n\n${dishPlans}\n\n${shoppingList}`,
     );
   };
 
@@ -28,15 +41,17 @@ export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryP
     <section className="pb-3">
       <div className="rounded-[36px] bg-white p-5 shadow-soft">
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-muted">Tonight's Dinner</p>
-        <h1 className="mt-2 text-4xl font-bold leading-tight">{dish.name}</h1>
-        <p className="mt-4 text-lg leading-8">{dish.description}</p>
+        <h1 className="mt-2 text-4xl font-bold leading-tight">今晚开饭</h1>
+        <p className="mt-4 text-lg leading-8">
+          {dishes.length} 道菜：{dishes.map((dish) => dish.name).join("、")}
+        </p>
 
         {nutritionMode && (
           <div className="mt-4 rounded-[26px] bg-paper p-4">
             <p className="text-sm font-bold">营养摘要</p>
             <p className="mt-2 text-sm leading-6 text-muted">
-              约 {dish.nutrition.calories} kcal，蛋白质 {dish.nutrition.proteinG}g，脂肪 {dish.nutrition.fatG}g，碳水{" "}
-              {dish.nutrition.carbsG}g。
+              约 {totalNutrition.calories} kcal，蛋白质 {totalNutrition.proteinG}g，脂肪 {totalNutrition.fatG}g，碳水{" "}
+              {totalNutrition.carbsG}g。
             </p>
           </div>
         )}
@@ -63,14 +78,21 @@ export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryP
 
       <div className="mt-5 rounded-[32px] bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-bold">Cooking</h2>
-        <div className="mt-4 space-y-3">
-          {dish.instructions.map((step, index) => (
-            <div key={step} className="flex gap-3 rounded-2xl bg-paper p-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">
-                {index + 1}
-              </span>
-              <p className="text-sm leading-6 text-ink">{step}</p>
-            </div>
+        <div className="mt-4 space-y-5">
+          {dishes.map((dish) => (
+            <section key={dish.id} className="rounded-[26px] bg-paper p-4">
+              <h3 className="text-lg font-bold text-ink">{dish.name}</h3>
+              <div className="mt-3 space-y-3">
+                {dish.instructions.map((step, index) => (
+                  <div key={`${dish.id}-${step}`} className="flex gap-3 rounded-2xl bg-white p-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm leading-6 text-ink">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       </div>

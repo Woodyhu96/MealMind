@@ -6,7 +6,18 @@ Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript,
 
 ## Current Version
 
-V1.0 is the local-first offline dinner planner prototype. It includes offline dish recommendations, local preference learning, recommendation browsing, related dish suggestions, and a shareable dinner summary.
+V1.1 is the tray-first local dinner planning release. It keeps the local-first offline recommendation engine from V1.0, then adds a clearer multi-dish dinner tray, stronger selection feedback, conversational recommendation labels, and a more polished tray overlay with a real blurred background layer.
+
+## V1.1 Update Notes
+
+- Moved confirmed dishes into a dinner tray instead of jumping directly to the final summary.
+- Added a tray popup with selected dishes, remove controls, and a single "开饭" action.
+- Combined shopping lists and cooking steps across all tray dishes on the final summary page.
+- Replaced numeric recommendation scores and relevance numbers with plain-language cues such as "爽口!", "最像这口!", and "最佳搭配!".
+- Changed the recommendation card header to "为你推荐" while keeping the weather reason module.
+- Replaced the dish flying animation with clearer green selection feedback on the card and confirm button.
+- Added visible background blur when the tray opens, while keeping the tray panel solid and readable.
+- Enabled local prediction ranking from prompt intent, chips, and stored preference feedback.
 
 ## Product Vision
 

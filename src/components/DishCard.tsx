@@ -1,5 +1,5 @@
 import { CloudSun, Heart, RefreshCw, ThumbsDown, Utensils } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { DinnerDish } from "../types/dinner";
 import { RelatedDishRail } from "./RelatedDishRail";
@@ -27,6 +27,12 @@ export function DishCard({
   onSelectRelatedDish,
 }: DishCardProps) {
   const swipeStartX = useRef<number | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const badge = getDishBadge(dish);
+
+  useEffect(() => {
+    setConfirming(false);
+  }, [dish.id]);
 
   const handlePointerUp = (x: number) => {
     if (swipeStartX.current === null) {
@@ -45,10 +51,22 @@ export function DishCard({
     }
   };
 
+  const handleConfirm = () => {
+    if (confirming) {
+      return;
+    }
+
+    setConfirming(true);
+    onConfirm();
+    window.setTimeout(() => setConfirming(false), 1100);
+  };
+
   return (
     <section className="dish-view flex flex-1 flex-col">
       <div
-        className="dish-card-surface touch-pan-y rounded-[34px] bg-white p-5 shadow-soft"
+        className={`dish-card-surface touch-pan-y rounded-[34px] border bg-white p-5 shadow-soft ${
+          confirming ? "is-confirming border-sage" : "border-transparent"
+        }`}
         onPointerDown={(event) => {
           swipeStartX.current = event.clientX;
         }}
@@ -59,14 +77,11 @@ export function DishCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-muted">
-              {dish.weatherContext.location} {dish.weatherContext.temperatureC}°C {dish.weatherContext.condition}
-            </p>
+            <p className="text-sm font-semibold text-muted">为你推荐</p>
             <h1 className="mt-2 text-4xl font-bold leading-tight">{dish.name}</h1>
           </div>
-          <div className="rounded-2xl bg-sage px-3 py-2 text-center">
-            <p className="text-xs font-semibold text-muted">Score</p>
-            <p className="text-xl font-bold">{dish.recommendationScore}</p>
+          <div className="shrink-0 rounded-2xl bg-sage px-3 py-2 text-center">
+            <p className="text-sm font-bold text-ink">{badge}</p>
           </div>
         </div>
 
@@ -116,7 +131,7 @@ export function DishCard({
         <ActionButton label="不喜欢" onClick={onDislike} tone="light" icon={<ThumbsDown size={19} />} />
         <ActionButton label="喜欢" onClick={onLike} tone="warm" icon={<Heart size={19} />} />
         <ActionButton label="换一道" onClick={onNext} tone="light" icon={<RefreshCw size={19} />} />
-        <ActionButton label="就吃这个" onClick={onConfirm} tone="dark" icon={<Utensils size={19} />} />
+        <ActionButton label="就吃这个" onClick={handleConfirm} tone={confirming ? "success" : "dark"} icon={<Utensils size={19} />} />
       </div>
 
       <div className="related-rail-wrapper pt-4">
@@ -124,6 +139,30 @@ export function DishCard({
       </div>
     </section>
   );
+}
+
+function getDishBadge(dish: DinnerDish) {
+  if (dish.tags.some((tag) => ["清淡", "素菜", "爽口"].includes(tag))) {
+    return "爽口!";
+  }
+
+  if (dish.tags.some((tag) => ["主食", "米饭", "面"].includes(tag))) {
+    return "很管饱!";
+  }
+
+  if (dish.tags.some((tag) => ["下饭", "辣", "黑椒", "咖喱"].includes(tag))) {
+    return "很下饭!";
+  }
+
+  if (dish.tags.some((tag) => ["汤", "暖胃"].includes(tag))) {
+    return "暖胃!";
+  }
+
+  if (dish.tags.some((tag) => ["高蛋白", "牛肉", "鸡肉", "虾"].includes(tag))) {
+    return "元气菜!";
+  }
+
+  return dish.recommendationScore >= 90 ? "人气菜品!" : "最佳搭配!";
 }
 
 function Metric({ label, value }: { label: string; value: string | number }) {
@@ -143,12 +182,14 @@ function ActionButton({
 }: {
   label: string;
   icon: ReactNode;
-  tone: "light" | "warm" | "dark";
+  tone: "light" | "warm" | "dark" | "success";
   onClick: () => void;
 }) {
   const className =
     tone === "dark"
       ? "bg-ink text-white"
+      : tone === "success"
+        ? "bg-sage text-ink"
       : tone === "warm"
         ? "bg-tomato/90 text-white"
         : "bg-white text-ink";

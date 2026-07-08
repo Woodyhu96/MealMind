@@ -1,12 +1,26 @@
 # Roadmap
 
-## Current Version: V1.0
+## Current Version: V1.1
 
 - Local-first dinner planner prototype
 - Offline dish library with generated recommendations
 - Like/dislike preference learning
-- Related dish suggestions
+- Related dish suggestions with conversational labels
+- Multi-dish dinner tray with remove controls
+- Combined shopping list and cooking steps summary
+- Tray overlay with solid panel and blurred background page
 - GitHub Pages deployment
+
+## V1.1 Release Notes
+
+- Confirming a dish now adds it to the dinner tray instead of immediately opening the final summary.
+- The tray can hold multiple dishes, remove dishes, and start dinner when ready.
+- The recommendation page no longer shows numeric scores or relevance values to the user.
+- Recommendation labels now use simple language such as "爽口!", "很下饭!", "最像这口!", and "最佳搭配!".
+- The recommendation card top label now says "为你推荐"; weather context remains inside the weather reason module.
+- Selection feedback now uses a visible green highlight and button color change.
+- Opening the tray blurs the background recommendation page and keeps the tray panel solid white.
+- Local prediction now uses current prompt intent, selected chips, and stored local preferences.
 
 ## Phase 1: Local Prototype
 
