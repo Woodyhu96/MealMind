@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-minimal/
+dist-plugin-test/
+.npm-cache/
+
+*.tsbuildinfo
+.DS_Store
