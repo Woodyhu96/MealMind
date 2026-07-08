@@ -8,6 +8,8 @@ type AppShellProps = {
   deviceProfile: DeviceProfile;
 };
 
+const appVersion = "V1.0";
+
 export function AppShell({ children, deviceProfile }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [onlineMode, setOnlineMode] = useState(false);
@@ -55,56 +57,27 @@ export function AppShell({ children, deviceProfile }: AppShellProps) {
               </div>
 
               <div className="mt-6 rounded-[24px] bg-white/75 p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-bold text-ink">Recommendation Mode</p>
-                    <p className="mt-1 text-xs font-semibold text-muted">{onlineMode ? "Online" : "Offline"}</p>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={onlineMode}
-                    onClick={() => setOnlineMode((current) => !current)}
-                    className={`relative h-9 w-[88px] rounded-full p-1 transition ${onlineMode ? "bg-ink" : "bg-line"}`}
-                  >
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.65rem] font-bold text-white/80">
-                      ON
-                    </span>
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.65rem] font-bold text-muted">
-                      OFF
-                    </span>
-                    <span
-                      className={`absolute top-1 h-7 w-10 rounded-full bg-white shadow-sm transition ${
-                        onlineMode ? "left-[43px]" : "left-1"
-                      }`}
-                    />
-                  </button>
+                <div>
+                  <p className="text-sm font-bold text-ink">Recommendation Mode</p>
+                  <p className="mt-1 text-xs font-semibold text-muted">{onlineMode ? "Online" : "Offline"}</p>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setOnlineMode(false)}
-                    className={`rounded-2xl px-3 py-3 text-sm font-bold transition ${
-                      !onlineMode ? "bg-ink text-white" : "bg-paper text-muted"
-                    }`}
-                  >
-                    Offline
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOnlineMode(true)}
-                    className={`rounded-2xl px-3 py-3 text-sm font-bold transition ${
-                      onlineMode ? "bg-ink text-white" : "bg-paper text-muted"
-                    }`}
-                  >
-                    Online
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={onlineMode}
+                  onClick={() => setOnlineMode((current) => !current)}
+                  className={`mode-switch mt-4 ${onlineMode ? "is-online" : ""}`}
+                >
+                  <span>Offline</span>
+                  <span>Online</span>
+                  <span className="mode-switch-thumb" />
+                </button>
               </div>
             </aside>
           </div>
         )}
       </div>
+      <div className="version-badge fixed bottom-4 left-4 z-30 text-xs font-bold text-[#4A4A4F]">{appVersion}</div>
     </main>
   );
 }

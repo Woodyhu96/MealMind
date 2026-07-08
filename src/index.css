@@ -37,6 +37,66 @@ body {
   pointer-events: none;
 }
 
+.mode-switch {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #d9d9de;
+  padding: 4px;
+  transition: background 220ms ease;
+}
+
+.mode-switch.is-online {
+  background: #1d1d1f;
+}
+
+.mode-switch span:not(.mode-switch-thumb) {
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  color: #6e6e73;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: color 220ms ease;
+}
+
+.mode-switch:not(.is-online) span:first-child {
+  color: #1d1d1f;
+}
+
+.mode-switch.is-online span:nth-child(2) {
+  color: #1d1d1f;
+}
+
+.mode-switch.is-online span:first-child {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mode-switch-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 8px rgba(29, 29, 31, 0.16);
+  transition: transform 220ms ease;
+  z-index: 0;
+}
+
+.mode-switch.is-online .mode-switch-thumb {
+  transform: translateX(100%);
+}
+
 [data-device="desktop-chrome"] .app-frame {
   max-width: 1180px;
   padding: 28px 32px;
@@ -113,6 +173,11 @@ body {
   padding-left: max(20px, env(safe-area-inset-left));
   padding-right: max(20px, env(safe-area-inset-right));
   padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+[data-device="iphone-safari"] .version-badge {
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(16px, env(safe-area-inset-left));
 }
 
 button,

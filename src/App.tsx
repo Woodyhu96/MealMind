@@ -51,7 +51,7 @@ export default function App() {
     window.setTimeout(() => {
       setCurrentIndex(0);
       setView("recommendation");
-    }, 1700);
+    }, 3900);
   };
 
   const showNextDish = () => {

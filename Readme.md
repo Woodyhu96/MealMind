@@ -2,7 +2,11 @@
 
 A personal local-first dinner decision assistant that helps Woody decide tonight's dinner in about two minutes.
 
-Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, mock dish data, and browser localStorage. It does not call OpenAI, does not use a backend, and does not expose API keys.
+Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, offline dish data, and browser localStorage. It does not call OpenAI, does not use a backend, and does not expose API keys.
+
+## Current Version
+
+V1.0 is the local-first offline dinner planner prototype. It includes offline dish recommendations, local preference learning, recommendation browsing, related dish suggestions, and a shareable dinner summary.
 
 ## Product Vision
 
@@ -72,6 +76,8 @@ The intended production architecture is:
 - Azure Function API proxy
 - OpenAI API for real recommendation generation
 - Weather API for live weather context
+- User choice controls for better recommendation steering
+- Automatic capture of each online-requested dish back into the offline menu
 - Secrets stored only in Azure, never in frontend code
 
 ## Security Warning
