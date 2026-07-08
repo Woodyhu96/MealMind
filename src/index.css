@@ -30,8 +30,15 @@ body {
   max-width: 430px;
 }
 
+.app-content-blurred {
+  filter: blur(18px);
+  opacity: 0.62;
+  transform: scale(0.985);
+  pointer-events: none;
+}
+
 [data-device="desktop-chrome"] .app-frame {
-  max-width: 1040px;
+  max-width: 1180px;
   padding: 28px 32px;
 }
 
@@ -57,7 +64,7 @@ body {
 
 [data-device="desktop-chrome"] .dish-view {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) 230px;
   gap: 18px;
   align-items: start;
 }
@@ -75,6 +82,30 @@ body {
 
 [data-device="desktop-chrome"] .dish-actions button {
   min-height: 88px;
+}
+
+[data-device="desktop-chrome"] .related-rail-wrapper {
+  grid-column: 1 / -1;
+  padding-top: 10px;
+}
+
+[data-device="desktop-chrome"] .related-rail {
+  padding: 18px;
+}
+
+[data-device="desktop-chrome"] .related-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: visible;
+}
+
+[data-device="desktop-chrome"] .related-button {
+  min-width: 0;
+}
+
+[data-device="desktop-chrome"] .menu-panel {
+  right: max(32px, calc((100vw - 1180px) / 2 + 32px));
+  top: 28px;
 }
 
 [data-device="iphone-safari"] .app-frame {

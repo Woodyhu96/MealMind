@@ -2,6 +2,8 @@ import { CloudSun, Heart, RefreshCw, ThumbsDown, Utensils } from "lucide-react";
 import { useRef } from "react";
 import type { ReactNode } from "react";
 import type { DinnerDish } from "../types/dinner";
+import { RelatedDishRail } from "./RelatedDishRail";
+import type { RelatedDish } from "../utils/relatedDishes";
 
 type DishCardProps = {
   dish: DinnerDish;
@@ -10,9 +12,20 @@ type DishCardProps = {
   onDislike: () => void;
   onNext: () => void;
   onConfirm: () => void;
+  relatedDishes: RelatedDish[];
+  onSelectRelatedDish: (dishId: string) => void;
 };
 
-export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onConfirm }: DishCardProps) {
+export function DishCard({
+  dish,
+  nutritionMode,
+  onLike,
+  onDislike,
+  onNext,
+  onConfirm,
+  relatedDishes,
+  onSelectRelatedDish,
+}: DishCardProps) {
   const swipeStartX = useRef<number | null>(null);
 
   const handlePointerUp = (x: number) => {
@@ -104,6 +117,10 @@ export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onCon
         <ActionButton label="喜欢" onClick={onLike} tone="warm" icon={<Heart size={19} />} />
         <ActionButton label="换一道" onClick={onNext} tone="light" icon={<RefreshCw size={19} />} />
         <ActionButton label="就吃这个" onClick={onConfirm} tone="dark" icon={<Utensils size={19} />} />
+      </div>
+
+      <div className="related-rail-wrapper pt-4">
+        <RelatedDishRail relatedDishes={relatedDishes} onSelectDish={onSelectRelatedDish} />
       </div>
     </section>
   );

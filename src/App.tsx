@@ -9,6 +9,7 @@ import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
 import type { DinnerDish } from "./types/dinner";
 import { rankDishes } from "./utils/preferenceEngine";
+import { getRelatedDishes } from "./utils/relatedDishes";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
 
@@ -28,6 +29,11 @@ export default function App() {
   );
 
   const currentDish = rankedDishes[currentIndex % rankedDishes.length];
+
+  const relatedDishes = useMemo(
+    () => getRelatedDishes(currentDish, rankedDishes, deviceProfile === "desktop-chrome" ? 8 : 6),
+    [currentDish, deviceProfile, rankedDishes],
+  );
 
   const toggleChip = (chip: string) => {
     setSelectedChips((current) =>
@@ -50,6 +56,13 @@ export default function App() {
 
   const showNextDish = () => {
     setCurrentIndex((index) => (index + 1) % rankedDishes.length);
+  };
+
+  const showDishById = (dishId: string) => {
+    const nextIndex = rankedDishes.findIndex((dish) => dish.id === dishId);
+    if (nextIndex >= 0) {
+      setCurrentIndex(nextIndex);
+    }
   };
 
   const handleFeedback = (feedback: "like" | "dislike") => {
@@ -89,6 +102,8 @@ export default function App() {
           onDislike={() => handleFeedback("dislike")}
           onNext={showNextDish}
           onConfirm={confirmDish}
+          relatedDishes={relatedDishes}
+          onSelectRelatedDish={showDishById}
         />
       )}
       {view === "summary" && confirmedDish && (
