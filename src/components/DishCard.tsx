@@ -1,4 +1,4 @@
-import { Clock, Heart, RefreshCw, ThumbsDown, Utensils } from "lucide-react";
+import { CloudSun, Heart, RefreshCw, ThumbsDown, Utensils } from "lucide-react";
 import { useRef } from "react";
 import type { ReactNode } from "react";
 import type { DinnerDish } from "../types/dinner";
@@ -33,9 +33,9 @@ export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onCon
   };
 
   return (
-    <section className="flex flex-1 flex-col">
+    <section className="dish-view flex flex-1 flex-col">
       <div
-        className="touch-pan-y rounded-[34px] bg-white p-5 shadow-soft"
+        className="dish-card-surface touch-pan-y rounded-[34px] bg-white p-5 shadow-soft"
         onPointerDown={(event) => {
           swipeStartX.current = event.clientX;
         }}
@@ -59,6 +59,17 @@ export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onCon
 
         <p className="mt-5 text-lg leading-8 text-ink">{dish.description}</p>
 
+        <div className="mt-5 rounded-[26px] bg-citrus/50 p-4">
+          <p className="flex items-center gap-2 text-sm font-bold text-ink">
+            <CloudSun size={17} />
+            天气理由
+          </p>
+          <p className="mt-2 text-sm leading-6 text-ink">
+            {dish.weatherContext.location} {dish.weatherContext.temperatureC}°C {dish.weatherContext.condition}，
+            {dish.recommendationReason[0]}
+          </p>
+        </div>
+
         <div className="mt-5 rounded-[26px] bg-paper p-4">
           <p className="text-sm font-bold text-ink">为什么推荐</p>
           <div className="mt-3 space-y-2">
@@ -79,17 +90,6 @@ export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onCon
           </div>
         )}
 
-        <div className="mt-5 flex items-center justify-between rounded-2xl bg-ink px-4 py-3 text-white">
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Clock size={17} />
-            {dish.cooking.timeMinutes} 分钟
-          </span>
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Utensils size={17} />
-            {dish.cooking.difficulty}
-          </span>
-        </div>
-
         <div className="mt-4 flex flex-wrap gap-2">
           {dish.tags.map((tag) => (
             <span key={tag} className="rounded-full bg-ocean/25 px-3 py-1 text-sm font-medium text-ink">
@@ -99,7 +99,7 @@ export function DishCard({ dish, nutritionMode, onLike, onDislike, onNext, onCon
         </div>
       </div>
 
-      <div className="mt-auto grid grid-cols-4 gap-2 pt-5">
+      <div className="dish-actions mt-auto grid grid-cols-4 gap-2 pt-5">
         <ActionButton label="不喜欢" onClick={onDislike} tone="light" icon={<ThumbsDown size={19} />} />
         <ActionButton label="喜欢" onClick={onLike} tone="warm" icon={<Heart size={19} />} />
         <ActionButton label="换一道" onClick={onNext} tone="light" icon={<RefreshCw size={19} />} />

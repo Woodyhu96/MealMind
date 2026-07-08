@@ -26,6 +26,64 @@ body {
   background: #f5f5f7;
 }
 
+.app-frame {
+  max-width: 430px;
+}
+
+[data-device="desktop-chrome"] .app-frame {
+  max-width: 1040px;
+  padding: 28px 32px;
+}
+
+[data-device="desktop-chrome"] .home-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  column-gap: 36px;
+  align-items: start;
+}
+
+[data-device="desktop-chrome"] .home-hero {
+  padding-top: 72px;
+}
+
+[data-device="desktop-chrome"] .home-hero h1 {
+  max-width: 560px;
+  font-size: 4.5rem;
+}
+
+[data-device="desktop-chrome"] .home-controls {
+  min-height: calc(100vh - 150px);
+}
+
+[data-device="desktop-chrome"] .dish-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: start;
+}
+
+[data-device="desktop-chrome"] .dish-card-surface {
+  padding: 28px;
+}
+
+[data-device="desktop-chrome"] .dish-actions {
+  position: sticky;
+  top: 28px;
+  grid-template-columns: 1fr;
+  padding-top: 0;
+}
+
+[data-device="desktop-chrome"] .dish-actions button {
+  min-height: 88px;
+}
+
+[data-device="iphone-safari"] .app-frame {
+  max-width: 430px;
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
 button,
 textarea {
   font: inherit;

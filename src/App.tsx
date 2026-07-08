@@ -5,6 +5,7 @@ import { DishCard } from "./components/DishCard";
 import { HomeView } from "./components/HomeView";
 import { ThinkingView } from "./components/ThinkingView";
 import { offlineDishes } from "./data/offlineDishes";
+import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
 import type { DinnerDish } from "./types/dinner";
 import { rankDishes } from "./utils/preferenceEngine";
@@ -18,6 +19,7 @@ export default function App() {
   const [nutritionMode, setNutritionMode] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [confirmedDish, setConfirmedDish] = useState<DinnerDish | null>(null);
+  const deviceProfile = useDeviceProfile();
   const { preferences, recordFeedback } = useLocalPreferences();
 
   const rankedDishes = useMemo(
@@ -66,7 +68,7 @@ export default function App() {
   };
 
   return (
-    <AppShell>
+    <AppShell deviceProfile={deviceProfile}>
       {view === "home" && (
         <HomeView
           prompt={prompt}

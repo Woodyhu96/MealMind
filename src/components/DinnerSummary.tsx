@@ -31,14 +31,6 @@ export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryP
         <h1 className="mt-2 text-4xl font-bold leading-tight">{dish.name}</h1>
         <p className="mt-4 text-lg leading-8">{dish.description}</p>
 
-        <div className="mt-5 rounded-[26px] bg-citrus/50 p-4">
-          <p className="text-sm font-bold text-ink">天气理由</p>
-          <p className="mt-2 text-sm leading-6 text-ink">
-            {dish.weatherContext.location} {dish.weatherContext.temperatureC}°C {dish.weatherContext.condition}，
-            {dish.recommendationReason[0]}
-          </p>
-        </div>
-
         {nutritionMode && (
           <div className="mt-4 rounded-[26px] bg-paper p-4">
             <p className="text-sm font-bold">营养摘要</p>
@@ -48,11 +40,6 @@ export function DinnerSummary({ dish, nutritionMode, onRestart }: DinnerSummaryP
             </p>
           </div>
         )}
-
-        <div className="mt-4 flex items-center justify-between rounded-2xl bg-ink px-4 py-3 text-sm font-bold text-white">
-          <span>{dish.cooking.timeMinutes} 分钟</span>
-          <span>{dish.cooking.difficulty}</span>
-        </div>
       </div>
 
       <div className="mt-5 rounded-[32px] bg-white p-5 shadow-sm">
