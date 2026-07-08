@@ -29,7 +29,7 @@ Dinner planning should feel like asking a calm personal assistant, not browsing 
 
 All Phase 1 behavior runs in the browser:
 
-- Mock dishes live in `src/data/mockDishes.ts`.
+- Offline dishes live in `src/data/offlineDishes.ts`.
 - Preferences live in localStorage.
 - Likes and dislikes update tag scores locally.
 - Recommendation ranking is simulated in `src/utils/preferenceEngine.ts`.

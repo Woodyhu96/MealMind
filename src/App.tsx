@@ -4,7 +4,7 @@ import { DinnerSummary } from "./components/DinnerSummary";
 import { DishCard } from "./components/DishCard";
 import { HomeView } from "./components/HomeView";
 import { ThinkingView } from "./components/ThinkingView";
-import { mockDishes } from "./data/mockDishes";
+import { offlineDishes } from "./data/offlineDishes";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
 import type { DinnerDish } from "./types/dinner";
 import { rankDishes } from "./utils/preferenceEngine";
@@ -21,7 +21,7 @@ export default function App() {
   const { preferences, recordFeedback } = useLocalPreferences();
 
   const rankedDishes = useMemo(
-    () => rankDishes(mockDishes, preferences, nutritionMode),
+    () => rankDishes(offlineDishes, preferences, nutritionMode),
     [nutritionMode, preferences],
   );
 

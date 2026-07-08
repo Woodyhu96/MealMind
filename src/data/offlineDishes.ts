@@ -1001,7 +1001,7 @@ const originalMockDishes: DinnerDish[] = [
   },
 ];
 
-export const mockDishes: DinnerDish[] = [
+export const offlineDishes: DinnerDish[] = [
   ...originalMockDishes,
   ...chefDishSeeds.map((seed, index) => createChefDish(seed, index)),
 ];
