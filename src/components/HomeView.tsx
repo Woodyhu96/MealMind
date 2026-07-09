@@ -43,11 +43,13 @@ export function HomeView({
   onlineMode,
   weatherProfile,
 }: HomeViewProps) {
+  const greeting = getTimeBasedGreeting();
+
   return (
     <section className="home-view flex flex-1 flex-col">
       <div className="home-hero pt-3">
-        <p className="text-lg font-semibold text-muted">Good Evening, Woody</p>
-        <h1 className="mt-3 text-[2.75rem] font-bold leading-[0.98] tracking-normal">今晚想吃点什么？</h1>
+        <p className="text-lg font-semibold text-muted">{greeting}</p>
+        <h1 className="mt-3 text-[2.75rem] font-bold leading-[0.98] tracking-normal">想吃点什么？</h1>
         <div className="mt-5 rounded-[24px] bg-white/78 px-4 py-3 shadow-sm">
           <p className="text-sm font-bold text-ink">
             {weatherProfile.status === "loading" ? "正在判断天气" : `${weatherProfile.location} · ${weatherProfile.temperatureC}°C · ${weatherProfile.condition}`}
@@ -107,4 +109,14 @@ export function HomeView({
       </div>
     </section>
   );
+}
+
+function getTimeBasedGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 5) return "Good Night";
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  if (hour < 22) return "Good Evening";
+  return "Good Night";
 }
