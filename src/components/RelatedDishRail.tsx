@@ -35,7 +35,7 @@ export function RelatedDishRail({ relatedDishes, onSelectDish }: RelatedDishRail
             key={dish.id}
             type="button"
             onClick={() => onSelectDish(dish.id)}
-            className="related-button min-w-[142px] rounded-[22px] px-4 py-3 text-left text-sm font-bold text-ink shadow-sm transition hover:-translate-y-0.5 active:scale-[0.98]"
+            className="related-button min-w-[142px] rounded-[22px] px-4 py-3 text-left text-sm font-bold text-ink shadow-sm"
             style={{ background: gradients[index] ?? gradients[gradients.length - 1] }}
           >
             <span className="block leading-5">{dish.name}</span>

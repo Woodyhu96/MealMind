@@ -1,25 +1,65 @@
-import { Menu, X } from "lucide-react";
+import { Check, House, Menu, Plus, RotateCcw, Star, Trash2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import type { DeviceProfile } from "../hooks/useDeviceProfile";
+import type { DinnerDish } from "../types/dinner";
 
 type AppShellProps = {
   children: ReactNode;
   deviceProfile: DeviceProfile;
+  onlineMode: boolean;
+  onOnlineModeChange: (onlineMode: boolean) => void;
+  onRestart: () => void;
+  favoriteDishes: DinnerDish[];
+  onAddFavoriteDishToDinner: (dish: DinnerDish) => void;
+  onRemoveFavoriteDish: (dishId: string) => void;
 };
 
 const appVersion = "V1.1";
 
-export function AppShell({ children, deviceProfile }: AppShellProps) {
+export function AppShell({
+  children,
+  deviceProfile,
+  onlineMode,
+  onOnlineModeChange,
+  onRestart,
+  favoriteDishes,
+  onAddFavoriteDishToDinner,
+  onRemoveFavoriteDish,
+}: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [onlineMode, setOnlineMode] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [confirmedFavoriteIds, setConfirmedFavoriteIds] = useState<string[]>([]);
+
+  const restartFromMenu = () => {
+    setMenuOpen(false);
+    setFavoritesOpen(false);
+    setConfirmedFavoriteIds([]);
+    onRestart();
+  };
+
+  const addFavoriteDish = (dish: DinnerDish) => {
+    onAddFavoriteDishToDinner(dish);
+    setConfirmedFavoriteIds((current) => (current.includes(dish.id) ? current : [...current, dish.id]));
+    window.setTimeout(() => {
+      setConfirmedFavoriteIds((current) => current.filter((dishId) => dishId !== dish.id));
+    }, 1200);
+  };
 
   return (
     <main className="min-h-screen bg-paper text-ink" data-device={deviceProfile}>
       <div className="app-frame mx-auto flex min-h-screen w-full flex-col px-5 py-5">
         <div className={`app-content flex min-h-screen flex-col transition duration-300 ${menuOpen ? "app-content-blurred" : ""}`}>
           <div className="mb-5 flex items-center justify-between">
-            <p className="text-lg font-bold">Dinner Planner</p>
+            <button
+              type="button"
+              aria-label="Back to start"
+              onClick={onRestart}
+              className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-lg font-bold text-ink shadow-sm transition active:scale-[0.97]"
+            >
+              <House size={18} />
+              <span>Dinner Planner</span>
+            </button>
             <button
               type="button"
               aria-label="Open menu"
@@ -56,6 +96,81 @@ export function AppShell({ children, deviceProfile }: AppShellProps) {
                 </button>
               </div>
 
+              <button
+                type="button"
+                onClick={restartFromMenu}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[24px] bg-ink px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98]"
+              >
+                <RotateCcw size={17} />
+                重新开始
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFavoritesOpen((current) => !current)}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[24px] bg-white px-4 py-3 text-sm font-bold text-ink shadow-sm transition active:scale-[0.98]"
+              >
+                <Star size={17} />
+                收藏
+                {favoriteDishes.length > 0 && (
+                  <span className="rounded-full bg-citrus px-2 py-0.5 text-xs font-bold text-ink">{favoriteDishes.length}</span>
+                )}
+              </button>
+
+              {favoritesOpen && (
+                <section className="mt-3 rounded-[24px] bg-white/82 p-3 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-ink">已收藏菜品</p>
+                    <span className="text-xs font-semibold text-muted">{favoriteDishes.length} 道</span>
+                  </div>
+                  {favoriteDishes.length === 0 ? (
+                    <p className="mt-3 rounded-2xl bg-paper px-3 py-4 text-center text-xs font-semibold leading-5 text-muted">
+                      还没有收藏。去推荐页点菜名旁边的星星。
+                    </p>
+                  ) : (
+                    <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+                      {favoriteDishes.map((dish) => {
+                        const confirmed = confirmedFavoriteIds.includes(dish.id);
+
+                        return (
+                          <div
+                            key={dish.id}
+                            className={`flex items-center gap-2 rounded-2xl p-2 transition duration-300 ${
+                              confirmed ? "bg-sage/45 ring-2 ring-sage" : "bg-paper"
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-bold text-ink">{dish.name}</p>
+                              <p className="mt-0.5 line-clamp-1 text-xs font-medium text-muted">
+                                {confirmed ? "已加入今晚菜单" : dish.description}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              aria-label={`Add ${dish.name} to dinner tray`}
+                              onClick={() => addFavoriteDish(dish)}
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:scale-[0.96] ${
+                                confirmed ? "bg-sage text-ink" : "bg-ink text-white"
+                              }`}
+                            >
+                              {confirmed ? <Check size={16} /> : <Plus size={16} />}
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Remove ${dish.name} from favorites`}
+                              onClick={() => onRemoveFavoriteDish(dish.id)}
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-muted transition hover:text-tomato active:scale-[0.96]"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              )}
+
               <div className="mt-6 rounded-[24px] bg-white/75 p-4">
                 <div>
                   <p className="text-sm font-bold text-ink">Recommendation Mode</p>
@@ -65,7 +180,7 @@ export function AppShell({ children, deviceProfile }: AppShellProps) {
                   type="button"
                   role="switch"
                   aria-checked={onlineMode}
-                  onClick={() => setOnlineMode((current) => !current)}
+                  onClick={() => onOnlineModeChange(!onlineMode)}
                   className={`mode-switch mt-4 ${onlineMode ? "is-online" : ""}`}
                 >
                   <span>Offline</span>

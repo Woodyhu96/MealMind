@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "./components/AppShell";
 import { DinnerSummary } from "./components/DinnerSummary";
 import { DinnerTray } from "./components/DinnerTray";
@@ -13,18 +13,35 @@ import { rankDishesByLocalPrediction } from "./utils/preferenceEngine";
 import { getRelatedDishes } from "./utils/relatedDishes";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
+const favoritesStorageKey = "ai-dinner-planner.favorites.v1";
+
+function loadFavoriteIds() {
+  try {
+    const value = localStorage.getItem(favoritesStorageKey);
+    return value ? (JSON.parse(value) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function App() {
   const [view, setView] = useState<View>("home");
   const [prompt, setPrompt] = useState("");
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
+  const selectedChipsRef = useRef<string[]>([]);
   const [nutritionMode, setNutritionMode] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dinnerDishes, setDinnerDishes] = useState<DinnerDish[]>([]);
   const [trayOpen, setTrayOpen] = useState(false);
   const [predictionSeed, setPredictionSeed] = useState({ prompt: "", chips: [] as string[] });
+  const [onlineMode, setOnlineMode] = useState(false);
+  const [favoriteDishIds, setFavoriteDishIds] = useState<string[]>(() => loadFavoriteIds());
   const deviceProfile = useDeviceProfile();
   const { preferences, recordFeedback } = useLocalPreferences();
+
+  useEffect(() => {
+    localStorage.setItem(favoritesStorageKey, JSON.stringify(favoriteDishIds));
+  }, [favoriteDishIds]);
 
   const rankedDishes = useMemo(
     () =>
@@ -39,25 +56,32 @@ export default function App() {
   );
 
   const currentDish = rankedDishes[currentIndex % rankedDishes.length];
+  const favoriteDishes = useMemo(
+    () => favoriteDishIds.map((dishId) => offlineDishes.find((dish) => dish.id === dishId)).filter((dish): dish is DinnerDish => Boolean(dish)),
+    [favoriteDishIds],
+  );
 
   const relatedDishes = useMemo(
-    () => getRelatedDishes(currentDish, rankedDishes, deviceProfile === "desktop-chrome" ? 8 : 6),
-    [currentDish, deviceProfile, rankedDishes],
+    () => getRelatedDishes(currentDish, rankedDishes, deviceProfile === "desktop-chrome" ? 8 : 6, dinnerDishes),
+    [currentDish, deviceProfile, dinnerDishes, rankedDishes],
   );
 
   const toggleChip = (chip: string) => {
-    setSelectedChips((current) =>
-      current.includes(chip) ? current.filter((item) => item !== chip) : [...current, chip],
-    );
+    setSelectedChips((current) => {
+      const next = current.includes(chip) ? current.filter((item) => item !== chip) : [...current, chip];
+      selectedChipsRef.current = next;
+      return next;
+    });
   };
 
   const generateRecommendations = () => {
+    const chips = selectedChipsRef.current;
     console.info("[AI Dinner Planner] Mock generation input", {
       prompt,
-      selectedChips,
+      selectedChips: chips,
       nutritionMode,
     });
-    setPredictionSeed({ prompt, chips: selectedChips });
+    setPredictionSeed({ prompt, chips });
     setView("thinking");
     window.setTimeout(() => {
       setCurrentIndex(0);
@@ -77,8 +101,17 @@ export default function App() {
   };
 
   const showNextRelatedDish = (extraExcludedDishId?: string) => {
-    const excludedDishIds = new Set([...dinnerDishes.map((dish) => dish.id), extraExcludedDishId].filter(Boolean));
-    const nextDish = relatedDishes.find(({ dish }) => !excludedDishIds.has(dish.id))?.dish;
+    const selectedDishes = extraExcludedDishId
+      ? [...dinnerDishes, rankedDishes.find((dish) => dish.id === extraExcludedDishId)].filter(
+          (dish): dish is DinnerDish => Boolean(dish),
+        )
+      : dinnerDishes;
+    const nextDish = getRelatedDishes(
+      currentDish,
+      rankedDishes,
+      deviceProfile === "desktop-chrome" ? 8 : 6,
+      selectedDishes,
+    )[0]?.dish;
 
     if (nextDish) {
       showDishById(nextDish.id);
@@ -93,9 +126,7 @@ export default function App() {
     showNextDish();
   };
 
-  const addDishToDinner = () => {
-    const dishToAdd = currentDish;
-
+  const addDishToDinnerByDish = (dishToAdd: DinnerDish) => {
     setDinnerDishes((current) => {
       if (current.some((dish) => dish.id === dishToAdd.id)) {
         return current;
@@ -103,18 +134,47 @@ export default function App() {
 
       return [...current, dishToAdd];
     });
+  };
+
+  const addDishToDinner = () => {
+    const dishToAdd = currentDish;
+
+    addDishToDinnerByDish(dishToAdd);
     window.setTimeout(() => showNextRelatedDish(dishToAdd.id), 820);
     window.setTimeout(() => recordFeedback(dishToAdd, "like"), 1050);
   };
 
+  const toggleFavoriteDish = (dish: DinnerDish) => {
+    setFavoriteDishIds((current) =>
+      current.includes(dish.id) ? current.filter((dishId) => dishId !== dish.id) : [...current, dish.id],
+    );
+  };
+
+  const removeFavoriteDish = (dishId: string) => {
+    setFavoriteDishIds((current) => current.filter((favoriteDishId) => favoriteDishId !== dishId));
+  };
+
   const restart = () => {
+    setPrompt("");
+    setSelectedChips([]);
+    selectedChipsRef.current = [];
+    setCurrentIndex(0);
     setDinnerDishes([]);
     setTrayOpen(false);
+    setPredictionSeed({ prompt: "", chips: [] });
     setView("home");
   };
 
   return (
-    <AppShell deviceProfile={deviceProfile}>
+    <AppShell
+      deviceProfile={deviceProfile}
+      onlineMode={onlineMode}
+      onOnlineModeChange={setOnlineMode}
+      onRestart={restart}
+      favoriteDishes={favoriteDishes}
+      onAddFavoriteDishToDinner={addDishToDinnerByDish}
+      onRemoveFavoriteDish={removeFavoriteDish}
+    >
       <div className={`main-experience flex flex-1 flex-col ${trayOpen ? "tray-background-blurred" : ""}`}>
         {view === "home" && (
           <HomeView
@@ -125,6 +185,7 @@ export default function App() {
             onToggleChip={toggleChip}
             onNutritionModeChange={setNutritionMode}
             onGenerate={generateRecommendations}
+            onlineMode={onlineMode}
           />
         )}
         {view === "thinking" && <ThinkingView />}
@@ -138,6 +199,8 @@ export default function App() {
             onConfirm={addDishToDinner}
             relatedDishes={relatedDishes}
             onSelectRelatedDish={showDishById}
+            favorite={favoriteDishIds.includes(currentDish.id)}
+            onToggleFavorite={() => toggleFavoriteDish(currentDish)}
           />
         )}
         {view === "summary" && dinnerDishes.length > 0 && (

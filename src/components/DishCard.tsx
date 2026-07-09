@@ -1,5 +1,5 @@
-import { CloudSun, Heart, RefreshCw, ThumbsDown, Utensils } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { CloudSun, Heart, RefreshCw, Star, ThumbsDown, Utensils } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { DinnerDish } from "../types/dinner";
 import { RelatedDishRail } from "./RelatedDishRail";
@@ -14,6 +14,8 @@ type DishCardProps = {
   onConfirm: () => void;
   relatedDishes: RelatedDish[];
   onSelectRelatedDish: (dishId: string) => void;
+  favorite: boolean;
+  onToggleFavorite: () => void;
 };
 
 export function DishCard({
@@ -25,31 +27,15 @@ export function DishCard({
   onConfirm,
   relatedDishes,
   onSelectRelatedDish,
+  favorite,
+  onToggleFavorite,
 }: DishCardProps) {
-  const swipeStartX = useRef<number | null>(null);
   const [confirming, setConfirming] = useState(false);
   const badge = getDishBadge(dish);
 
   useEffect(() => {
     setConfirming(false);
   }, [dish.id]);
-
-  const handlePointerUp = (x: number) => {
-    if (swipeStartX.current === null) {
-      return;
-    }
-
-    const delta = x - swipeStartX.current;
-    swipeStartX.current = null;
-
-    if (delta > 72) {
-      onLike();
-    }
-
-    if (delta < -72) {
-      onDislike();
-    }
-  };
 
   const handleConfirm = () => {
     if (confirming) {
@@ -67,21 +53,26 @@ export function DishCard({
         className={`dish-card-surface touch-pan-y rounded-[34px] border bg-white p-5 shadow-soft ${
           confirming ? "is-confirming border-sage" : "border-transparent"
         }`}
-        onPointerDown={(event) => {
-          swipeStartX.current = event.clientX;
-        }}
-        onPointerCancel={() => {
-          swipeStartX.current = null;
-        }}
-        onPointerUp={(event) => handlePointerUp(event.clientX)}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-muted">为你推荐</p>
-            <h1 className="mt-2 text-4xl font-bold leading-tight">{dish.name}</h1>
-          </div>
-          <div className="shrink-0 rounded-2xl bg-sage px-3 py-2 text-center">
-            <p className="text-sm font-bold text-ink">{badge}</p>
+        <div>
+          <p className="text-sm font-semibold text-muted">为你推荐</p>
+          <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <h1 className="min-w-0 text-4xl font-bold leading-tight">{dish.name}</h1>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                aria-label={favorite ? "Remove favorite dish" : "Favorite dish"}
+                onClick={onToggleFavorite}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition active:scale-[0.96] ${
+                  favorite ? "border-citrus text-citrus" : "border-line text-muted"
+                }`}
+              >
+                <Star size={21} fill={favorite ? "currentColor" : "none"} />
+              </button>
+              <div className="shrink-0 rounded-2xl bg-sage px-3 py-2 text-center">
+                <p className="text-sm font-bold text-ink">{badge}</p>
+              </div>
+            </div>
           </div>
         </div>
 

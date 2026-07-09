@@ -33,6 +33,19 @@ export function DinnerTray({ dishes, open, onOpen, onClose, onRemoveDish, onStar
     }, 360);
   };
 
+  const startDinnerWithTransition = () => {
+    if (dishes.length === 0) {
+      return;
+    }
+
+    setClosing(true);
+    window.setTimeout(() => {
+      setVisible(false);
+      setClosing(false);
+      onStartDinner();
+    }, 360);
+  };
+
   return (
     <>
       <button
@@ -110,7 +123,7 @@ export function DinnerTray({ dishes, open, onOpen, onClose, onRemoveDish, onStar
 
             <button
               type="button"
-              onClick={onStartDinner}
+              onClick={startDinnerWithTransition}
               disabled={dishes.length === 0}
               className="mt-5 rounded-full bg-tomato px-5 py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.98] disabled:bg-line disabled:text-muted"
             >

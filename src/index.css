@@ -51,6 +51,39 @@ body {
   pointer-events: none;
 }
 
+.online-generate-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #1d6fd8;
+}
+
+.online-generate-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    rgba(138, 197, 216, 0.95),
+    rgba(207, 229, 213, 0.95),
+    rgba(246, 215, 122, 0.95),
+    rgba(240, 127, 99, 0.9),
+    rgba(138, 197, 216, 0.95)
+  );
+  animation: online-border-spin 3.6s linear infinite;
+}
+
+.online-generate-button::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #1d6fd8, #3894ff);
+}
+
 .mode-switch {
   position: relative;
   isolation: isolate;
@@ -268,6 +301,12 @@ button {
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes online-border-spin {
+  to {
+    transform: rotate(1turn);
   }
 }
 
