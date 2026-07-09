@@ -1,7 +1,7 @@
 import { CloudSun, Heart, RefreshCw, Star, ThumbsDown, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { DinnerDish } from "../types/dinner";
+import type { DinnerDish, WeatherProfile } from "../types/dinner";
 import { RelatedDishRail } from "./RelatedDishRail";
 import type { RelatedDish } from "../utils/relatedDishes";
 
@@ -16,6 +16,7 @@ type DishCardProps = {
   onSelectRelatedDish: (dishId: string) => void;
   favorite: boolean;
   onToggleFavorite: () => void;
+  weatherProfile: WeatherProfile;
 };
 
 export function DishCard({
@@ -29,6 +30,7 @@ export function DishCard({
   onSelectRelatedDish,
   favorite,
   onToggleFavorite,
+  weatherProfile,
 }: DishCardProps) {
   const [confirming, setConfirming] = useState(false);
   const badge = getDishBadge(dish);
@@ -85,7 +87,7 @@ export function DishCard({
           </p>
           <p className="mt-2 text-sm leading-6 text-ink">
             {dish.weatherContext.location} {dish.weatherContext.temperatureC}°C {dish.weatherContext.condition}，
-            {dish.recommendationReason[0]}
+            {weatherProfile.reason}
           </p>
         </div>
 

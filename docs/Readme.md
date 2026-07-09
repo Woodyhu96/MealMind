@@ -6,7 +6,7 @@
 
 # Current Version
 
-V1.1 adds the multi-dish dinner tray, conversational recommendation labels, visible tray background blur, stronger confirm feedback, and local prediction ranking based on prompt intent, chips, and stored preferences.
+V1.2 adds live approximate city/weather context, weather-aware local ranking, an expanded offline Chinese home-cooking menu, and cleaned dish tags that exclude internal source labels from recommendation indexing.
 
 ---
 
@@ -634,14 +634,14 @@ The product succeeds if:
 
 Version:
 
-`v0.1 Product Design`
+`v1.2 Weather-aware local prototype`
 
 Current focus:
 
-1. Finalize UI prototype
-2. Define AI JSON Schema
-3. Build frontend mock application
-4. Connect AI services
+1. Tune weather-aware local recommendations
+2. Add richer user selection controls
+3. Prepare ChatGPT/OpenAI API integration through a backend proxy
+4. Store accepted online dishes back into the offline menu
 
 ---
 

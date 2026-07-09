@@ -15,7 +15,7 @@ type AppShellProps = {
   onRemoveFavoriteDish: (dishId: string) => void;
 };
 
-const appVersion = "V1.1";
+const appVersion = "V1.2";
 
 export function AppShell({
   children,

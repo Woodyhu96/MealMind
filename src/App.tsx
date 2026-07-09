@@ -8,9 +8,11 @@ import { ThinkingView } from "./components/ThinkingView";
 import { offlineDishes } from "./data/offlineDishes";
 import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
-import type { DinnerDish } from "./types/dinner";
+import type { DinnerDish, WeatherProfile } from "./types/dinner";
 import { rankDishesByLocalPrediction } from "./utils/preferenceEngine";
 import { getRelatedDishes } from "./utils/relatedDishes";
+import { adaptDishesToWeather } from "./utils/weatherAdaptation";
+import { fetchWeatherProfile, getFallbackWeatherProfile } from "./utils/weatherApi";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
 const favoritesStorageKey = "ai-dinner-planner.favorites.v1";
@@ -36,29 +38,54 @@ export default function App() {
   const [predictionSeed, setPredictionSeed] = useState({ prompt: "", chips: [] as string[] });
   const [onlineMode, setOnlineMode] = useState(false);
   const [favoriteDishIds, setFavoriteDishIds] = useState<string[]>(() => loadFavoriteIds());
+  const [weatherProfile, setWeatherProfile] = useState<WeatherProfile>(() => ({
+    ...getFallbackWeatherProfile(),
+    status: "loading" as const,
+    reason: "正在判断你所在城市的天气，用来微调今晚推荐。",
+  }));
   const deviceProfile = useDeviceProfile();
   const { preferences, recordFeedback } = useLocalPreferences();
+
+  useEffect(() => {
+    let active = true;
+
+    fetchWeatherProfile().then((profile) => {
+      if (active) {
+        setWeatherProfile(profile);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(favoritesStorageKey, JSON.stringify(favoriteDishIds));
   }, [favoriteDishIds]);
 
+  const weatherAwareDishes = useMemo(() => adaptDishesToWeather(offlineDishes, weatherProfile), [weatherProfile]);
+
   const rankedDishes = useMemo(
     () =>
       rankDishesByLocalPrediction(
-        offlineDishes,
+        weatherAwareDishes,
         preferences,
         nutritionMode,
         predictionSeed.prompt,
         predictionSeed.chips,
+        weatherProfile,
       ),
-    [nutritionMode, preferences, predictionSeed],
+    [nutritionMode, preferences, predictionSeed, weatherAwareDishes, weatherProfile],
   );
 
   const currentDish = rankedDishes[currentIndex % rankedDishes.length];
   const favoriteDishes = useMemo(
-    () => favoriteDishIds.map((dishId) => offlineDishes.find((dish) => dish.id === dishId)).filter((dish): dish is DinnerDish => Boolean(dish)),
-    [favoriteDishIds],
+    () =>
+      favoriteDishIds
+        .map((dishId) => weatherAwareDishes.find((dish) => dish.id === dishId))
+        .filter((dish): dish is DinnerDish => Boolean(dish)),
+    [favoriteDishIds, weatherAwareDishes],
   );
 
   const relatedDishes = useMemo(
@@ -186,6 +213,7 @@ export default function App() {
             onNutritionModeChange={setNutritionMode}
             onGenerate={generateRecommendations}
             onlineMode={onlineMode}
+            weatherProfile={weatherProfile}
           />
         )}
         {view === "thinking" && <ThinkingView />}
@@ -201,6 +229,7 @@ export default function App() {
             onSelectRelatedDish={showDishById}
             favorite={favoriteDishIds.includes(currentDish.id)}
             onToggleFavorite={() => toggleFavoriteDish(currentDish)}
+            weatherProfile={weatherProfile}
           />
         )}
         {view === "summary" && dinnerDishes.length > 0 && (

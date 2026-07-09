@@ -1,4 +1,5 @@
-import type { DinnerDish, PreferenceState } from "../types/dinner";
+import type { DinnerDish, PreferenceState, WeatherProfile } from "../types/dinner";
+import { weatherScoreForDish } from "./weatherAdaptation";
 
 export const emptyPreferences: PreferenceState = {
   likedDishIds: [],
@@ -103,12 +104,15 @@ export function rankDishesByLocalPrediction(
   nutritionMode: boolean,
   prompt: string,
   selectedChips: string[],
+  weather?: WeatherProfile,
 ) {
   const intentTags = inferIntentTags(prompt, selectedChips);
 
   return [...dishes].sort((a, b) => {
     const intentScoreA = a.tags.reduce((score, tag) => score + (intentTags.has(tag) ? 16 : 0), 0);
     const intentScoreB = b.tags.reduce((score, tag) => score + (intentTags.has(tag) ? 16 : 0), 0);
+    const weatherScoreA = weather ? weatherScoreForDish(a, weather) : 0;
+    const weatherScoreB = weather ? weatherScoreForDish(b, weather) : 0;
     const priorityA = requestCoursePriority(a, prompt, selectedChips);
     const priorityB = requestCoursePriority(b, prompt, selectedChips);
 
@@ -119,7 +123,8 @@ export function rankDishesByLocalPrediction(
     return (
       scoreDish(b, preferences, nutritionMode) +
       intentScoreB -
-      (scoreDish(a, preferences, nutritionMode) + intentScoreA)
+      weatherScoreB -
+      (scoreDish(a, preferences, nutritionMode) + intentScoreA + weatherScoreA)
     );
   });
 }

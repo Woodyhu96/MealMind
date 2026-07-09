@@ -2,11 +2,21 @@
 
 A personal local-first dinner decision assistant that helps Woody decide tonight's dinner in about two minutes.
 
-Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, offline dish data, and browser localStorage. It does not call OpenAI, does not use a backend, and does not expose API keys.
+Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, offline dish data, browser localStorage, and keyless location/weather APIs. It does not call OpenAI, does not use a backend, and does not expose API keys.
 
 ## Current Version
 
-V1.1 is the tray-first local dinner planning release. It keeps the local-first offline recommendation engine from V1.0, then adds a clearer multi-dish dinner tray, stronger selection feedback, conversational recommendation labels, and a more polished tray overlay with a real blurred background layer.
+V1.2 is the weather-aware offline recommendation release. It keeps the V1.1 tray-first dinner flow, expands the offline Chinese home-cooking library, removes internal source tags from ranking, and adds live city/weather context for weather-sensitive menu recommendations.
+
+## V1.2 Update Notes
+
+- Added keyless approximate location lookup with `ipapi.co`, falling back to `ipwho.is` when needed.
+- Added Open-Meteo current weather lookup for city, temperature, apparent temperature, weather condition, and season.
+- Updated the home page and recommendation page to show the current city/weather context.
+- Weather now adjusts local ranking: hot weather favors light, refreshing dishes; cold/rainy weather favors soups, casseroles, and warming dishes.
+- Expanded the offline menu with additional Chinese home-style quick dishes.
+- Removed internal source tags such as `大厨` and `搜索补充` from dish tags so they are not used as recommendation indexes.
+- Kept V1.1 dinner tray, favorites, conversational labels, and combined summary behavior.
 
 ## V1.1 Update Notes
 
@@ -48,9 +58,10 @@ All Phase 1 behavior runs in the browser:
 - Preferences live in localStorage.
 - Likes and dislikes update tag scores locally.
 - Recommendation ranking is simulated in `src/utils/preferenceEngine.ts`.
+- Approximate city/weather context is fetched client-side from keyless public APIs.
 - Shopping lists are generated from local dish data.
 
-No backend, database, login system, weather API, or OpenAI API is used in this phase.
+No backend, database, login system, or OpenAI API is used in this phase.
 
 ## Run Locally
 
@@ -86,7 +97,7 @@ The intended production architecture is:
 - GitHub Pages frontend
 - Azure Function API proxy
 - OpenAI API for real recommendation generation
-- Weather API for live weather context
+- Weather context is already available client-side; a backend proxy can replace it later for stricter privacy/control.
 - User choice controls for better recommendation steering
 - Automatic capture of each online-requested dish back into the offline menu
 - Secrets stored only in Azure, never in frontend code

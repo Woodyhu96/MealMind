@@ -1,15 +1,26 @@
 # Roadmap
 
-## Current Version: V1.1
+## Current Version: V1.2
 
 - Local-first dinner planner prototype
 - Offline dish library with generated recommendations
 - Like/dislike preference learning
+- Live approximate city and weather context through keyless public APIs
+- Weather-aware recommendation ranking for hot, cold, rainy, and mild conditions
 - Related dish suggestions with conversational labels
 - Multi-dish dinner tray with remove controls
 - Combined shopping list and cooking steps summary
 - Tray overlay with solid panel and blurred background page
 - GitHub Pages deployment
+
+## V1.2 Release Notes
+
+- Added approximate location lookup with `ipapi.co`, falling back to `ipwho.is`.
+- Added Open-Meteo current weather lookup for temperature, apparent temperature, weather condition, and local season.
+- Home and recommendation views now show live city/weather context.
+- Recommendations now adapt to weather: hot weather boosts light and refreshing dishes, while cold or rainy weather boosts soups, casseroles, and warming dishes.
+- Expanded the offline Chinese home-cooking dish library.
+- Removed internal source tags from dish tags so `大厨` and `搜索补充` are not used as recommendation indexes.
 
 ## V1.1 Release Notes
 
@@ -34,7 +45,7 @@
 
 ## Phase 2: Real Context
 
-- Add live weather through a backend proxy
+- Optionally move weather/location lookup behind a backend proxy for stricter privacy and request control
 - Add richer preference controls
 - Add explicit user selection controls for cuisine, time, ingredients, and nutrition intent
 - Add pantry-aware recommendations

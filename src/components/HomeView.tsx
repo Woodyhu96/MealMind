@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { Chip } from "./Chip";
 import { Toggle } from "./Toggle";
+import type { WeatherProfile } from "../types/dinner";
 
 const onlineQuickOptions = ["🌶️ 辣一点", "🥩 高蛋白", "⏱️ 30 分钟内", "🍲 想喝汤", "🥗 清淡一点", "🌤️ 适合天气"];
 
@@ -28,6 +29,7 @@ type HomeViewProps = {
   onNutritionModeChange: (checked: boolean) => void;
   onGenerate: () => void;
   onlineMode: boolean;
+  weatherProfile: WeatherProfile;
 };
 
 export function HomeView({
@@ -39,12 +41,19 @@ export function HomeView({
   onNutritionModeChange,
   onGenerate,
   onlineMode,
+  weatherProfile,
 }: HomeViewProps) {
   return (
     <section className="home-view flex flex-1 flex-col">
       <div className="home-hero pt-3">
         <p className="text-lg font-semibold text-muted">Good Evening, Woody</p>
         <h1 className="mt-3 text-[2.75rem] font-bold leading-[0.98] tracking-normal">今晚想吃点什么？</h1>
+        <div className="mt-5 rounded-[24px] bg-white/78 px-4 py-3 shadow-sm">
+          <p className="text-sm font-bold text-ink">
+            {weatherProfile.status === "loading" ? "正在判断天气" : `${weatherProfile.location} · ${weatherProfile.temperatureC}°C · ${weatherProfile.condition}`}
+          </p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-muted">{weatherProfile.reason}</p>
+        </div>
       </div>
 
       <div className="home-controls flex flex-1 flex-col">

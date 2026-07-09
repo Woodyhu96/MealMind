@@ -41,3 +41,16 @@ export type PreferenceState = {
   dislikedDishIds: string[];
   tagScores: Record<string, number>;
 };
+
+export type WeatherProfile = {
+  status: "loading" | "ready" | "fallback" | "error";
+  location: string;
+  temperatureC: number;
+  apparentTemperatureC: number;
+  condition: string;
+  climate: string;
+  season: string;
+  tags: string[];
+  reason: string;
+  updatedAt?: string;
+};
