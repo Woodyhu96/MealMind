@@ -129,8 +129,8 @@ export function getRelatedDishes(
       return priorityA - priorityB || b.relevance - a.relevance || b.dish.recommendationScore - a.dish.recommendationScore;
     });
 
-  const meatTarget = limit >= 8 ? 4 : 3;
-  const vegetableTarget = limit >= 8 ? 2 : 2;
+  const meatTarget = Math.max(1, Math.ceil(limit * 0.5));
+  const vegetableTarget = Math.max(1, Math.ceil(limit * 0.25));
   const soupTarget = Math.max(1, limit - meatTarget - vegetableTarget);
   const groups = [
     sortedCandidates.filter((item) => coursePriority(item.dish) === 0),

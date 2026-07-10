@@ -1,9 +1,10 @@
-import { Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles } from "lucide-react";
 import type { RelatedDish } from "../utils/relatedDishes";
 
 type RelatedDishRailProps = {
   relatedDishes: RelatedDish[];
   onSelectDish: (dishId: string) => void;
+  onRefresh: () => void;
 };
 
 const gradients = [
@@ -15,7 +16,7 @@ const gradients = [
   "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,245,247,0.95))",
 ];
 
-export function RelatedDishRail({ relatedDishes, onSelectDish }: RelatedDishRailProps) {
+export function RelatedDishRail({ relatedDishes, onSelectDish, onRefresh }: RelatedDishRailProps) {
   return (
     <section className="related-rail rounded-[30px] bg-white/80 p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
@@ -26,7 +27,14 @@ export function RelatedDishRail({ relatedDishes, onSelectDish }: RelatedDishRail
           </p>
           <p className="mt-1 text-xs font-medium text-muted">越靠前越像你现在想吃的</p>
         </div>
-        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-muted">按口味排好</span>
+        <button
+          type="button"
+          aria-label="刷新猜你想吃"
+          onClick={onRefresh}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper text-muted transition hover:text-ink active:scale-[0.96]"
+        >
+          <RefreshCw size={17} />
+        </button>
       </div>
 
       <div className="related-list mt-4 flex gap-2 overflow-x-auto pb-1">

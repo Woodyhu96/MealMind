@@ -1,17 +1,28 @@
 # Roadmap
 
-## Current Version: V1.2
+## Current Version: V1.3
 
 - Local-first dinner planner prototype
 - Offline dish library with generated recommendations
 - Like/dislike preference learning
 - Live approximate city and weather context through keyless public APIs
 - Weather-aware recommendation ranking for hot, cold, rainy, and mild conditions
+- Explicit Protein x flavor combination coverage with at least two visibly matching dishes per combination
+- Current user selections outrank weather and historical preference signals
 - Related dish suggestions with conversational labels
 - Multi-dish dinner tray with remove controls
 - Combined shopping list and cooking steps summary
 - Tray overlay with solid panel and blurred background page
 - GitHub Pages deployment
+
+## V1.3 Release Notes
+
+- Expanded the offline Chinese home-cooking library from 184 to 204 dishes.
+- Added enough dishes to cover every Protein x flavor filter combination with at least two visible matches.
+- Changed flavor matching so `蒜香`, `黑椒`, `咖喱`, and `酸甜` must be present in the dish name, description, or tags.
+- Fixed `鸡肉` matching so chicken filters do not match egg-only dishes.
+- Strengthened ranking so current selections have priority over weather and stored preference history.
+- Verified example combinations: `牛肉 + 蒜香` and `鸡肉 + 酸甜`.
 
 ## V1.2 Release Notes
 

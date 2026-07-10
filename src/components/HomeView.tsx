@@ -76,6 +76,11 @@ export function HomeView({
                 <Chip key={option} label={option} selected={selectedChips.includes(option)} onClick={() => onToggleChip(option)} />
               ))}
             </div>
+
+            <div className="mt-5">
+              <p className="mb-2 px-1 text-xs font-bold uppercase tracking-normal text-muted">偏好设置</p>
+              <Toggle checked={nutritionMode} onChange={onNutritionModeChange} label="营养模式" />
+            </div>
           </>
         ) : (
           <div className="mt-9 space-y-4">
@@ -89,23 +94,26 @@ export function HomeView({
                 </div>
               </section>
             ))}
+
+            <div className="pt-1">
+              <p className="mb-2 px-1 text-xs font-bold uppercase tracking-normal text-muted">偏好设置</p>
+              <Toggle checked={nutritionMode} onChange={onNutritionModeChange} label="营养模式" />
+            </div>
           </div>
         )}
 
-        <div className="mt-6">
-          <Toggle checked={nutritionMode} onChange={onNutritionModeChange} label="营养模式" />
+        <div className="mt-auto pt-8">
+          <button
+            type="button"
+            onClick={onGenerate}
+            className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.99] ${
+              onlineMode ? "online-generate-button" : "bg-ink hover:bg-black"
+            }`}
+          >
+            <Sparkles size={20} />
+            生成今晚菜单
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={onGenerate}
-          className={`mt-auto flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.99] ${
-            onlineMode ? "online-generate-button" : "bg-ink hover:bg-black"
-          }`}
-        >
-          <Sparkles size={20} />
-          生成今晚菜单
-        </button>
       </div>
     </section>
   );

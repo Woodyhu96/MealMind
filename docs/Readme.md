@@ -6,7 +6,7 @@
 
 # Current Version
 
-V1.2 adds live approximate city/weather context, weather-aware local ranking, an expanded offline Chinese home-cooking menu, and cleaned dish tags that exclude internal source labels from recommendation indexing.
+V1.3 adds explicit Protein x flavor coverage, expands the offline Chinese home-cooking menu to 204 dishes, and makes current user selections the strongest ranking signal ahead of weather and stored preference history.
 
 ---
 
@@ -634,11 +634,11 @@ The product succeeds if:
 
 Version:
 
-`v1.2 Weather-aware local prototype`
+`v1.3 Preference-coverage local prototype`
 
 Current focus:
 
-1. Tune weather-aware local recommendations
+1. Tune combination-aware local recommendations
 2. Add richer user selection controls
 3. Prepare ChatGPT/OpenAI API integration through a backend proxy
 4. Store accepted online dishes back into the offline menu

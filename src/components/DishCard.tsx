@@ -1,4 +1,4 @@
-import { CloudSun, Heart, RefreshCw, Star, ThumbsDown, Utensils } from "lucide-react";
+import { CloudSun, RefreshCw, Star, ThumbsDown, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { DinnerDish, WeatherProfile } from "../types/dinner";
@@ -8,12 +8,12 @@ import type { RelatedDish } from "../utils/relatedDishes";
 type DishCardProps = {
   dish: DinnerDish;
   nutritionMode: boolean;
-  onLike: () => void;
   onDislike: () => void;
   onNext: () => void;
   onConfirm: () => void;
   relatedDishes: RelatedDish[];
   onSelectRelatedDish: (dishId: string) => void;
+  onRefreshRelatedDishes: () => void;
   favorite: boolean;
   onToggleFavorite: () => void;
   weatherProfile: WeatherProfile;
@@ -22,12 +22,12 @@ type DishCardProps = {
 export function DishCard({
   dish,
   nutritionMode,
-  onLike,
   onDislike,
   onNext,
   onConfirm,
   relatedDishes,
   onSelectRelatedDish,
+  onRefreshRelatedDishes,
   favorite,
   onToggleFavorite,
   weatherProfile,
@@ -120,15 +120,18 @@ export function DishCard({
         </div>
       </div>
 
-      <div className="dish-actions mt-auto grid grid-cols-4 gap-2 pt-5">
+      <div className="dish-actions mt-auto grid grid-cols-3 gap-2 pt-5">
         <ActionButton label="不喜欢" onClick={onDislike} tone="light" icon={<ThumbsDown size={19} />} />
-        <ActionButton label="喜欢" onClick={onLike} tone="warm" icon={<Heart size={19} />} />
         <ActionButton label="换一道" onClick={onNext} tone="light" icon={<RefreshCw size={19} />} />
         <ActionButton label="就吃这个" onClick={handleConfirm} tone={confirming ? "success" : "dark"} icon={<Utensils size={19} />} />
       </div>
 
       <div className="related-rail-wrapper pt-4">
-        <RelatedDishRail relatedDishes={relatedDishes} onSelectDish={onSelectRelatedDish} />
+        <RelatedDishRail
+          relatedDishes={relatedDishes}
+          onSelectDish={onSelectRelatedDish}
+          onRefresh={onRefreshRelatedDishes}
+        />
       </div>
     </section>
   );
@@ -175,7 +178,7 @@ function ActionButton({
 }: {
   label: string;
   icon: ReactNode;
-  tone: "light" | "warm" | "dark" | "success";
+  tone: "light" | "dark" | "success";
   onClick: () => void;
 }) {
   const className =
@@ -183,8 +186,6 @@ function ActionButton({
       ? "bg-ink text-white"
       : tone === "success"
         ? "bg-sage text-ink"
-      : tone === "warm"
-        ? "bg-tomato/90 text-white"
         : "bg-white text-ink";
 
   return (

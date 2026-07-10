@@ -44,6 +44,10 @@ function textForDish(dish: DinnerDish) {
   return [dish.name, dish.description, ...dish.tags, ...dish.ingredients.map((ingredient) => ingredient.name)].join(" ");
 }
 
+function flavorTextForDish(dish: DinnerDish) {
+  return [dish.name, dish.description, ...dish.tags].join(" ");
+}
+
 function proteinTextForDish(dish: DinnerDish) {
   return [dish.name, ...dish.tags, ...dish.ingredients.map((ingredient) => ingredient.name)].join(" ");
 }
@@ -53,12 +57,48 @@ function selectedProteinTerms(prompt: string, selectedChips: string[]) {
   const terms: string[] = [];
 
   if (/牛肉|牛排|🥩/.test(text)) terms.push("牛肉", "牛排", "牛骨", "牛肋", "牛排骨");
-  if (/鸡肉|鸡腿|鸡翅|🍗/.test(text)) terms.push("鸡肉", "鸡腿", "鸡翅", "鸡");
+  if (/鸡肉|鸡腿|鸡胸|鸡翅|鸡丁|🍗/.test(text)) terms.push("鸡肉", "鸡腿", "鸡胸", "鸡翅", "鸡丁");
   if (/虾|海鲜|🦐/.test(text)) terms.push("虾", "海鲜", "花甲", "海蛎", "干贝");
   if (/鱼|🐟/.test(text)) terms.push("鱼", "鲈鱼");
   if (/鸡蛋|蛋|🥚/.test(text)) terms.push("鸡蛋", "蛋");
 
   return terms;
+}
+
+function selectedPreferenceScore(dish: DinnerDish, prompt: string, selectedChips: string[]) {
+  const requestText = `${prompt} ${selectedChips.join(" ")}`;
+  const dishText = textForDish(dish);
+  const flavorText = flavorTextForDish(dish);
+  const proteinTerms = selectedProteinTerms(prompt, selectedChips);
+  let score = 0;
+
+  if (proteinTerms.length > 0 && proteinTerms.some((term) => dishText.includes(term))) {
+    score += 96;
+  }
+
+  const explicitMatches: Array<[RegExp, RegExp, number]> = [
+    [/辣|spicy|🌶/, /辣|麻辣|香辣|酸辣|水煮|干锅/, 72],
+    [/清淡|轻|低负担|🥗/, /清淡|爽口|凉拌|蒸|白灼/, 58],
+    [/汤|soup|🍲/, /汤|羹|煲/, 58],
+    [/蒜香|蒜|🧄/, /蒜|蒜蓉|蒜香/, 52],
+    [/黑椒|🫙/, /黑椒/, 52],
+    [/咖喱|🍛/, /咖喱/, 52],
+    [/酸甜|糖醋/, /酸甜|糖醋|番茄|茄汁/, 52],
+    [/下饭|🍚/, /下饭|红烧|干锅|辣|咖喱/, 44],
+    [/快|30|分钟|省事|⏱|⚡/, /快手|快炒|凉拌|白灼|蒸/, 44],
+  ];
+
+  explicitMatches.forEach(([requestPattern, dishPattern, value]) => {
+    if (requestPattern.test(requestText) && dishPattern.test(flavorText)) {
+      score += value;
+    }
+  });
+
+  if (/不要肉|素|🥬/.test(requestText)) {
+    score += dish.tags.includes("素菜") || !hasProteinDish(dish) ? 96 : -120;
+  }
+
+  return score;
 }
 
 function hasProteinDish(dish: DinnerDish) {
@@ -111,8 +151,10 @@ export function rankDishesByLocalPrediction(
   return [...dishes].sort((a, b) => {
     const intentScoreA = a.tags.reduce((score, tag) => score + (intentTags.has(tag) ? 16 : 0), 0);
     const intentScoreB = b.tags.reduce((score, tag) => score + (intentTags.has(tag) ? 16 : 0), 0);
-    const weatherScoreA = weather ? weatherScoreForDish(a, weather) : 0;
-    const weatherScoreB = weather ? weatherScoreForDish(b, weather) : 0;
+    const selectedPreferenceScoreA = selectedPreferenceScore(a, prompt, selectedChips);
+    const selectedPreferenceScoreB = selectedPreferenceScore(b, prompt, selectedChips);
+    const weatherScoreA = weather ? Math.round(weatherScoreForDish(a, weather) * 0.35) : 0;
+    const weatherScoreB = weather ? Math.round(weatherScoreForDish(b, weather) * 0.35) : 0;
     const priorityA = requestCoursePriority(a, prompt, selectedChips);
     const priorityB = requestCoursePriority(b, prompt, selectedChips);
 
@@ -120,10 +162,14 @@ export function rankDishesByLocalPrediction(
       return priorityA - priorityB;
     }
 
+    if (selectedPreferenceScoreA !== selectedPreferenceScoreB) {
+      return selectedPreferenceScoreB - selectedPreferenceScoreA;
+    }
+
     return (
       scoreDish(b, preferences, nutritionMode) +
+      weatherScoreB +
       intentScoreB -
-      weatherScoreB -
       (scoreDish(a, preferences, nutritionMode) + intentScoreA + weatherScoreA)
     );
   });

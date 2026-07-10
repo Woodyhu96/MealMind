@@ -6,7 +6,16 @@ Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript,
 
 ## Current Version
 
-V1.2 is the weather-aware offline recommendation release. It keeps the V1.1 tray-first dinner flow, expands the offline Chinese home-cooking library, removes internal source tags from ranking, and adds live city/weather context for weather-sensitive menu recommendations.
+V1.3 is the preference-coverage release. It keeps weather-aware local recommendations, expands the offline menu to 204 dishes, and ensures each Protein x flavor filter combination has at least two visibly matching dishes.
+
+## V1.3 Update Notes
+
+- Expanded the offline Chinese home-cooking menu from 184 to 204 dishes.
+- Added coverage for every Protein x flavor filter combination, with at least two dishes that visibly match both selected elements.
+- Tightened flavor matching so labels such as `蒜香`, `黑椒`, `咖喱`, and `酸甜` must appear in the dish name, description, or tags rather than only in hidden seasonings.
+- Fixed `鸡肉` matching so it no longer incorrectly matches `鸡蛋`.
+- Updated local ranking so the user's current selections outrank weather and historical preference signals.
+- Verified key examples: `牛肉 + 蒜香` recommends `黑椒蒜香牛肉粒`; `鸡肉 + 酸甜` recommends `宫保鸡丁`.
 
 ## V1.2 Update Notes
 

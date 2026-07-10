@@ -26,6 +26,14 @@ function loadFavoriteIds() {
   }
 }
 
+function getRotatedRelatedDishes<T>(items: T[], offset: number, limit: number) {
+  if (items.length <= limit) {
+    return items;
+  }
+
+  return Array.from({ length: limit }, (_, index) => items[(offset + index) % items.length]);
+}
+
 export default function App() {
   const [view, setView] = useState<View>("home");
   const [prompt, setPrompt] = useState("");
@@ -38,6 +46,7 @@ export default function App() {
   const [predictionSeed, setPredictionSeed] = useState({ prompt: "", chips: [] as string[] });
   const [onlineMode, setOnlineMode] = useState(false);
   const [favoriteDishIds, setFavoriteDishIds] = useState<string[]>(() => loadFavoriteIds());
+  const [relatedRefreshOffset, setRelatedRefreshOffset] = useState(0);
   const [weatherProfile, setWeatherProfile] = useState<WeatherProfile>(() => ({
     ...getFallbackWeatherProfile(),
     status: "loading" as const,
@@ -88,17 +97,22 @@ export default function App() {
     [favoriteDishIds, weatherAwareDishes],
   );
 
+  const relatedDishLimit = deviceProfile === "desktop-chrome" ? 8 : 6;
+  const relatedDishPool = useMemo(
+    () => getRelatedDishes(currentDish, rankedDishes, relatedDishLimit * 3, dinnerDishes),
+    [currentDish, dinnerDishes, rankedDishes, relatedDishLimit],
+  );
   const relatedDishes = useMemo(
-    () => getRelatedDishes(currentDish, rankedDishes, deviceProfile === "desktop-chrome" ? 8 : 6, dinnerDishes),
-    [currentDish, deviceProfile, dinnerDishes, rankedDishes],
+    () => getRotatedRelatedDishes(relatedDishPool, relatedRefreshOffset, relatedDishLimit),
+    [relatedDishLimit, relatedDishPool, relatedRefreshOffset],
   );
 
   const toggleChip = (chip: string) => {
-    setSelectedChips((current) => {
-      const next = current.includes(chip) ? current.filter((item) => item !== chip) : [...current, chip];
-      selectedChipsRef.current = next;
-      return next;
-    });
+    const current = selectedChipsRef.current;
+    const next = current.includes(chip) ? current.filter((item) => item !== chip) : [...current, chip];
+
+    selectedChipsRef.current = next;
+    setSelectedChips(next);
   };
 
   const generateRecommendations = () => {
@@ -112,19 +126,26 @@ export default function App() {
     setView("thinking");
     window.setTimeout(() => {
       setCurrentIndex(0);
+      setRelatedRefreshOffset(0);
       setView("recommendation");
     }, 3900);
   };
 
   const showNextDish = () => {
     setCurrentIndex((index) => (index + 1) % rankedDishes.length);
+    setRelatedRefreshOffset(0);
   };
 
   const showDishById = (dishId: string) => {
     const nextIndex = rankedDishes.findIndex((dish) => dish.id === dishId);
     if (nextIndex >= 0) {
       setCurrentIndex(nextIndex);
+      setRelatedRefreshOffset(0);
     }
+  };
+
+  const refreshRelatedDishes = () => {
+    setRelatedRefreshOffset((offset) => offset + relatedDishLimit);
   };
 
   const showNextRelatedDish = (extraExcludedDishId?: string) => {
@@ -186,6 +207,7 @@ export default function App() {
     setSelectedChips([]);
     selectedChipsRef.current = [];
     setCurrentIndex(0);
+    setRelatedRefreshOffset(0);
     setDinnerDishes([]);
     setTrayOpen(false);
     setPredictionSeed({ prompt: "", chips: [] });
@@ -221,12 +243,12 @@ export default function App() {
           <DishCard
             dish={currentDish}
             nutritionMode={nutritionMode}
-            onLike={() => handleFeedback("like")}
             onDislike={() => handleFeedback("dislike")}
             onNext={showNextDish}
             onConfirm={addDishToDinner}
             relatedDishes={relatedDishes}
             onSelectRelatedDish={showDishById}
+            onRefreshRelatedDishes={refreshRelatedDishes}
             favorite={favoriteDishIds.includes(currentDish.id)}
             onToggleFavorite={() => toggleFavoriteDish(currentDish)}
             weatherProfile={weatherProfile}
@@ -236,19 +258,21 @@ export default function App() {
           <DinnerSummary dishes={dinnerDishes} nutritionMode={nutritionMode} onRestart={restart} />
         )}
       </div>
-      <DinnerTray
-        dishes={dinnerDishes}
-        open={trayOpen}
-        onOpen={() => setTrayOpen(true)}
-        onClose={() => setTrayOpen(false)}
-        onRemoveDish={(dishId) => setDinnerDishes((current) => current.filter((dish) => dish.id !== dishId))}
-        onStartDinner={() => {
-          if (dinnerDishes.length > 0) {
-            setTrayOpen(false);
-            setView("summary");
-          }
-        }}
-      />
+      {view !== "home" && (
+        <DinnerTray
+          dishes={dinnerDishes}
+          open={trayOpen}
+          onOpen={() => setTrayOpen(true)}
+          onClose={() => setTrayOpen(false)}
+          onRemoveDish={(dishId) => setDinnerDishes((current) => current.filter((dish) => dish.id !== dishId))}
+          onStartDinner={() => {
+            if (dinnerDishes.length > 0) {
+              setTrayOpen(false);
+              setView("summary");
+            }
+          }}
+        />
+      )}
     </AppShell>
   );
 }
