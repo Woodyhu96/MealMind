@@ -3,6 +3,9 @@ dist/
 dist-minimal/
 dist-plugin-test/
 .npm-cache/
+.env
+.env.local
+.env.*.local
 
 *.tsbuildinfo
 .DS_Store

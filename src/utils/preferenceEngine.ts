@@ -40,16 +40,15 @@ function inferIntentTags(prompt: string, selectedChips: string[]) {
   return intents;
 }
 
-function textForDish(dish: DinnerDish) {
-  return [dish.name, dish.description, ...dish.tags, ...dish.ingredients.map((ingredient) => ingredient.name)].join(" ");
-}
-
 function flavorTextForDish(dish: DinnerDish) {
   return [dish.name, dish.description, ...dish.tags].join(" ");
 }
 
 function proteinTextForDish(dish: DinnerDish) {
-  return [dish.name, ...dish.tags, ...dish.ingredients.map((ingredient) => ingredient.name)].join(" ");
+  return dish.ingredients
+    .filter((ingredient) => ingredient.category === "protein")
+    .map((ingredient) => ingredient.name)
+    .join(" ");
 }
 
 function selectedProteinTerms(prompt: string, selectedChips: string[]) {
@@ -58,8 +57,8 @@ function selectedProteinTerms(prompt: string, selectedChips: string[]) {
 
   if (/牛肉|牛排|🥩/.test(text)) terms.push("牛肉", "牛排", "牛骨", "牛肋", "牛排骨");
   if (/鸡肉|鸡腿|鸡胸|鸡翅|鸡丁|🍗/.test(text)) terms.push("鸡肉", "鸡腿", "鸡胸", "鸡翅", "鸡丁");
-  if (/虾|海鲜|🦐/.test(text)) terms.push("虾", "海鲜", "花甲", "海蛎", "干贝");
-  if (/鱼|🐟/.test(text)) terms.push("鱼", "鲈鱼");
+  if (/虾|海鲜|🦐/.test(text)) terms.push("虾", "虾仁", "大虾", "花甲", "蛤", "蛤蜊", "海蛎", "干贝", "鱿鱼", "蟹");
+  if (/鱼|🐟/.test(text)) terms.push("鱼片", "鱼头", "鲈鱼", "鲫鱼", "鳕鱼", "带鱼", "鲮鱼", "鳕", "黄鱼", "草鱼");
   if (/鸡蛋|蛋|🥚/.test(text)) terms.push("鸡蛋", "蛋");
 
   return terms;
@@ -67,12 +66,11 @@ function selectedProteinTerms(prompt: string, selectedChips: string[]) {
 
 function selectedPreferenceScore(dish: DinnerDish, prompt: string, selectedChips: string[]) {
   const requestText = `${prompt} ${selectedChips.join(" ")}`;
-  const dishText = textForDish(dish);
   const flavorText = flavorTextForDish(dish);
   const proteinTerms = selectedProteinTerms(prompt, selectedChips);
   let score = 0;
 
-  if (proteinTerms.length > 0 && proteinTerms.some((term) => dishText.includes(term))) {
+  if (proteinTerms.length > 0 && proteinTerms.some((term) => proteinTextForDish(dish).includes(term))) {
     score += 96;
   }
 

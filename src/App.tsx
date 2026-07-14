@@ -3,24 +3,41 @@ import { AppShell } from "./components/AppShell";
 import { DinnerSummary } from "./components/DinnerSummary";
 import { DinnerTray } from "./components/DinnerTray";
 import { DishCard } from "./components/DishCard";
+import { FloatingNotice } from "./components/FloatingNotice";
 import { HomeView } from "./components/HomeView";
 import { ThinkingView } from "./components/ThinkingView";
 import { offlineDishes } from "./data/offlineDishes";
 import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
 import type { DinnerDish, WeatherProfile } from "./types/dinner";
+import { generateOnlineDinnerDishes } from "./utils/openAiDinnerApi";
 import { rankDishesByLocalPrediction } from "./utils/preferenceEngine";
 import { getRelatedDishes } from "./utils/relatedDishes";
 import { adaptDishesToWeather } from "./utils/weatherAdaptation";
 import { fetchWeatherProfile, getFallbackWeatherProfile } from "./utils/weatherApi";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
+type PredictionSeed = {
+  prompt: string;
+  chips: string[];
+  source: "offline" | "online";
+};
 const favoritesStorageKey = "ai-dinner-planner.favorites.v1";
+const onlineDishStorageKey = "ai-dinner-planner.online-dishes.v1";
 
 function loadFavoriteIds() {
   try {
     const value = localStorage.getItem(favoritesStorageKey);
     return value ? (JSON.parse(value) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadOnlineDishes() {
+  try {
+    const value = localStorage.getItem(onlineDishStorageKey);
+    return value ? (JSON.parse(value) as DinnerDish[]) : [];
   } catch {
     return [];
   }
@@ -34,6 +51,30 @@ function getRotatedRelatedDishes<T>(items: T[], offset: number, limit: number) {
   return Array.from({ length: limit }, (_, index) => items[(offset + index) % items.length]);
 }
 
+function mergeOnlineDishes(current: DinnerDish[], incoming: DinnerDish[]) {
+  const byName = new Map(current.map((dish) => [dish.name, dish]));
+
+  incoming.forEach((dish) => {
+    byName.set(dish.name, dish);
+  });
+
+  return Array.from(byName.values()).slice(-60);
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function getOnlineFallbackNotice(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+
+  if (message.includes("OPENAI_API_KEY")) {
+    return "Online 模式还没有配置 OPENAI_API_KEY，已先回退到离线菜单。要生成冬阴功这类库外菜，请在本地 .env 添加 key 后重启 demo 服务。";
+  }
+
+  return "Online 请求暂时没有成功，已先回退到离线菜单。你可以稍后重试，或检查本地 OpenAI API 配置。";
+}
+
 export default function App() {
   const [view, setView] = useState<View>("home");
   const [prompt, setPrompt] = useState("");
@@ -43,8 +84,11 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dinnerDishes, setDinnerDishes] = useState<DinnerDish[]>([]);
   const [trayOpen, setTrayOpen] = useState(false);
-  const [predictionSeed, setPredictionSeed] = useState({ prompt: "", chips: [] as string[] });
+  const [predictionSeed, setPredictionSeed] = useState<PredictionSeed>({ prompt: "", chips: [], source: "offline" });
   const [onlineMode, setOnlineMode] = useState(false);
+  const [onlineDishes, setOnlineDishes] = useState<DinnerDish[]>(() => loadOnlineDishes());
+  const [currentOnlineDishIds, setCurrentOnlineDishIds] = useState<string[]>([]);
+  const [generationNotice, setGenerationNotice] = useState("");
   const [favoriteDishIds, setFavoriteDishIds] = useState<string[]>(() => loadFavoriteIds());
   const [relatedRefreshOffset, setRelatedRefreshOffset] = useState(0);
   const [weatherProfile, setWeatherProfile] = useState<WeatherProfile>(() => ({
@@ -73,28 +117,42 @@ export default function App() {
     localStorage.setItem(favoritesStorageKey, JSON.stringify(favoriteDishIds));
   }, [favoriteDishIds]);
 
+  useEffect(() => {
+    localStorage.setItem(onlineDishStorageKey, JSON.stringify(onlineDishes));
+  }, [onlineDishes]);
+
   const weatherAwareDishes = useMemo(() => adaptDishesToWeather(offlineDishes, weatherProfile), [weatherProfile]);
+  const activeOnlineDishes = useMemo(
+    () =>
+      currentOnlineDishIds
+        .map((dishId) => onlineDishes.find((dish) => dish.id === dishId))
+        .filter((dish): dish is DinnerDish => Boolean(dish)),
+    [currentOnlineDishIds, onlineDishes],
+  );
+  const recommendationDishes =
+    predictionSeed.source === "online" && activeOnlineDishes.length > 0 ? activeOnlineDishes : weatherAwareDishes;
+  const allKnownDishes = useMemo(() => [...weatherAwareDishes, ...onlineDishes], [onlineDishes, weatherAwareDishes]);
 
   const rankedDishes = useMemo(
     () =>
       rankDishesByLocalPrediction(
-        weatherAwareDishes,
+        recommendationDishes,
         preferences,
         nutritionMode,
         predictionSeed.prompt,
         predictionSeed.chips,
         weatherProfile,
       ),
-    [nutritionMode, preferences, predictionSeed, weatherAwareDishes, weatherProfile],
+    [nutritionMode, predictionSeed, preferences, recommendationDishes, weatherProfile],
   );
 
   const currentDish = rankedDishes[currentIndex % rankedDishes.length];
   const favoriteDishes = useMemo(
     () =>
       favoriteDishIds
-        .map((dishId) => weatherAwareDishes.find((dish) => dish.id === dishId))
+        .map((dishId) => allKnownDishes.find((dish) => dish.id === dishId))
         .filter((dish): dish is DinnerDish => Boolean(dish)),
-    [favoriteDishIds, weatherAwareDishes],
+    [allKnownDishes, favoriteDishIds],
   );
 
   const relatedDishLimit = deviceProfile === "desktop-chrome" ? 8 : 6;
@@ -115,20 +173,56 @@ export default function App() {
     setSelectedChips(next);
   };
 
-  const generateRecommendations = () => {
+  const generateRecommendations = async () => {
     const chips = selectedChipsRef.current;
     console.info("[AI Dinner Planner] Mock generation input", {
       prompt,
       selectedChips: chips,
       nutritionMode,
     });
-    setPredictionSeed({ prompt, chips });
+    const source = onlineMode ? "online" : "offline";
+
+    setGenerationNotice("");
+    setPredictionSeed({ prompt, chips, source });
     setView("thinking");
-    window.setTimeout(() => {
+
+    if (!onlineMode) {
+      window.setTimeout(() => {
+        setCurrentOnlineDishIds([]);
+        setCurrentIndex(0);
+        setRelatedRefreshOffset(0);
+        setView("recommendation");
+      }, 3900);
+      return;
+    }
+
+    const thinkingDelay = wait(3900);
+
+    try {
+      const aiDishes = await generateOnlineDinnerDishes({
+        prompt,
+        selectedChips: chips,
+        nutritionMode,
+        weatherProfile,
+      });
+
+      await thinkingDelay;
+      setOnlineDishes((current) => mergeOnlineDishes(current, aiDishes));
+      setCurrentOnlineDishIds(aiDishes.map((dish) => dish.id));
+      setGenerationNotice("ChatGPT 已根据你的描述生成新菜品，并暂存到本地 online 菜单。");
       setCurrentIndex(0);
       setRelatedRefreshOffset(0);
       setView("recommendation");
-    }, 3900);
+    } catch (error) {
+      console.warn("[AI Dinner Planner] Online generation unavailable, falling back to offline dishes", error);
+      await thinkingDelay;
+      setPredictionSeed({ prompt, chips, source: "offline" });
+      setCurrentOnlineDishIds([]);
+      setGenerationNotice(getOnlineFallbackNotice(error));
+      setCurrentIndex(0);
+      setRelatedRefreshOffset(0);
+      setView("recommendation");
+    }
   };
 
   const showNextDish = () => {
@@ -210,7 +304,9 @@ export default function App() {
     setRelatedRefreshOffset(0);
     setDinnerDishes([]);
     setTrayOpen(false);
-    setPredictionSeed({ prompt: "", chips: [] });
+    setPredictionSeed({ prompt: "", chips: [], source: "offline" });
+    setCurrentOnlineDishIds([]);
+    setGenerationNotice("");
     setView("home");
   };
 
@@ -224,6 +320,11 @@ export default function App() {
       onAddFavoriteDishToDinner={addDishToDinnerByDish}
       onRemoveFavoriteDish={removeFavoriteDish}
     >
+      <FloatingNotice
+        message={generationNotice}
+        tone={generationNotice.includes("没有配置") || generationNotice.includes("失败") ? "error" : "info"}
+        onClose={() => setGenerationNotice("")}
+      />
       <div className={`main-experience flex flex-1 flex-col ${trayOpen ? "tray-background-blurred" : ""}`}>
         {view === "home" && (
           <HomeView

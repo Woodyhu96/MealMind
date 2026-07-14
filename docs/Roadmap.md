@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current Version: V1.3
+## Current Version: V1.4
 
 - Local-first dinner planner prototype
 - Offline dish library with generated recommendations
@@ -9,11 +9,24 @@
 - Weather-aware recommendation ranking for hot, cold, rainy, and mild conditions
 - Explicit Protein x flavor combination coverage with at least two visibly matching dishes per combination
 - Current user selections outrank weather and historical preference signals
+- Local Online mode proxy for OpenAI-generated dishes in development
+- Server-side `.env` API key handling for Online mode
+- Floating dismissible error notices for missing Online configuration
 - Related dish suggestions with conversational labels
 - Multi-dish dinner tray with remove controls
 - Combined shopping list and cooking steps summary
 - Tray overlay with solid panel and blurred background page
 - GitHub Pages deployment
+
+## V1.4 Release Notes
+
+- Added local Online mode generation through the Vite dev server at `/api/online-dinner`.
+- Added structured OpenAI Responses API mapping into existing MealMind dish cards, trays, summaries, shopping lists, and cooking steps.
+- Moved Online credentials to server-side `.env` variables and kept API keys out of browser bundles.
+- Added a dismissible floating error notice when Online mode is missing configuration or a request fails.
+- Kept GitHub Pages static-safe by falling back to offline recommendations when no backend is available.
+- Fixed fish-protein matching so `鱼香肉丝` and similar fish-fragrant dishes do not rank as fish.
+- Adopted release versioning: major updates use `V1.0 -> V2.0`, medium feature updates use `V1.1 -> V1.2`, and bug/minor fixes use `V1.1.0 -> V1.1.1`.
 
 ## V1.3 Release Notes
 

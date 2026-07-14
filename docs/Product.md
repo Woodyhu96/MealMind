@@ -7,8 +7,8 @@ The product is intentionally narrow. It is not a recipe search engine, grocery a
 ## Phase 1 Scope
 
 - Mobile-first single-page web app
-- Mock AI recommendation flow
-- Mock weather context
+- Offline recommendation flow with an optional local Online mode proxy
+- Live approximate weather context with keyless public APIs
 - Local preference learning
 - One dish recommendation at a time
 - Final dinner summary with shopping list and cooking steps
@@ -16,7 +16,7 @@ The product is intentionally narrow. It is not a recipe search engine, grocery a
 
 ## Core Interaction
 
-The user opens the app, describes tonight's dinner mood, taps any useful quick chips, and asks for a recommendation. The app simulates a short thinking state, then shows one dinner card. The user can like, dislike, replace, or confirm.
+The user opens the app, describes tonight's dinner mood, taps any useful quick chips, and asks for a recommendation. The app shows a short thinking state, then presents one dinner card at a time. Offline mode ranks local dishes; local Online mode can generate structured dishes through a server-side OpenAI proxy when configured. The user can replace, favorite, or confirm dishes into the dinner tray.
 
 ## Preference Learning
 

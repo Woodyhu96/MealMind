@@ -6,7 +6,7 @@
 
 # Current Version
 
-V1.3 adds explicit Protein x flavor coverage, expands the offline Chinese home-cooking menu to 204 dishes, and makes current user selections the strongest ranking signal ahead of weather and stored preference history.
+V1.4 adds the Online-mode foundation: local server-side OpenAI proxy support, structured generated dishes, static-safe offline fallback, dismissible configuration errors, and more accurate fish-protein matching.
 
 ---
 

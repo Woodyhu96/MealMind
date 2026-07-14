@@ -2,11 +2,22 @@
 
 A personal local-first dinner decision assistant that helps Woody decide tonight's dinner in about two minutes.
 
-Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, offline dish data, browser localStorage, and keyless location/weather APIs. It does not call OpenAI, does not use a backend, and does not expose API keys.
+Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript, Tailwind CSS, offline dish data, browser localStorage, and keyless location/weather APIs. Local development can also use a Vite server proxy for Online mode, while the published GitHub Pages build remains static and falls back to offline recommendations when no backend is available.
 
 ## Current Version
 
-V1.3 is the preference-coverage release. It keeps weather-aware local recommendations, expands the offline menu to 204 dishes, and ensures each Protein x flavor filter combination has at least two visibly matching dishes.
+V1.4 is the Online-mode foundation release. It adds a local server-side OpenAI proxy for generated dishes, keeps API keys out of the browser bundle, shows a dismissible floating error notice when Online mode is not configured, and tightens fish-protein matching.
+
+## V1.4 Update Notes
+
+- Added an Online recommendation API path through the local Vite dev server at `/api/online-dinner`.
+- Added structured OpenAI Responses API mapping so generated dishes use the same card, tray, shopping list, and cooking-step flow as offline dishes.
+- Moved OpenAI credentials to server-side `.env` variables: `OPENAI_API_KEY` and optional `OPENAI_MODEL`.
+- Added `.env.example` and `.gitignore` safeguards so private keys are not committed or bundled into the frontend.
+- Added a floating, dismissible error notice for missing Online configuration and failed Online requests.
+- Kept GitHub Pages static-safe: published builds fall back to offline recommendations when no API backend is available.
+- Fixed fish protein matching so dishes such as `鱼香肉丝` are not treated as fish dishes, while actual fish dishes still rank correctly.
+- Documented the versioning rule: major releases use `V1.0 -> V2.0`, medium feature updates use `V1.1 -> V1.2`, and bug/minor fixes use `V1.1.0 -> V1.1.1`.
 
 ## V1.3 Update Notes
 
@@ -14,8 +25,24 @@ V1.3 is the preference-coverage release. It keeps weather-aware local recommenda
 - Added coverage for every Protein x flavor filter combination, with at least two dishes that visibly match both selected elements.
 - Tightened flavor matching so labels such as `蒜香`, `黑椒`, `咖喱`, and `酸甜` must appear in the dish name, description, or tags rather than only in hidden seasonings.
 - Fixed `鸡肉` matching so it no longer incorrectly matches `鸡蛋`.
+- Fixed protein matching so dishes like `鱼香肉丝` and `鱼香茄子` are not treated as fish dishes.
 - Updated local ranking so the user's current selections outrank weather and historical preference signals.
 - Verified key examples: `牛肉 + 蒜香` recommends `黑椒蒜香牛肉粒`; `鸡肉 + 酸甜` recommends `宫保鸡丁`.
+
+## Online Mode Setup
+
+Online mode can call the OpenAI Responses API and map structured recommendations into the same MealMind card, tray, and dinner summary flow.
+
+Create a local `.env` file from `.env.example`:
+
+```bash
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+The key is intentionally not committed or exposed to the browser bundle. Local development uses the Vite dev server as a small proxy at `/api/online-dinner`. GitHub Pages builds without a backend and falls back to offline recommendations when online generation is unavailable.
+
+ChatGPT web SSO is not used as an API credential. Online generation should use a server-side OpenAI API key or a future backend auth flow; browser-side ChatGPT login cookies should not be reused by MealMind.
 
 ## V1.2 Update Notes
 
@@ -61,7 +88,7 @@ Dinner planning should feel like asking a calm personal assistant, not browsing 
 
 ## Local-First Architecture
 
-All Phase 1 behavior runs in the browser:
+Published Phase 1 behavior runs in the browser:
 
 - Offline dishes live in `src/data/offlineDishes.ts`.
 - Preferences live in localStorage.
@@ -70,7 +97,7 @@ All Phase 1 behavior runs in the browser:
 - Approximate city/weather context is fetched client-side from keyless public APIs.
 - Shopping lists are generated from local dish data.
 
-No backend, database, login system, or OpenAI API is used in this phase.
+The local development server can optionally proxy Online mode requests to OpenAI when `OPENAI_API_KEY` is configured. The static GitHub Pages app has no backend, database, login system, or exposed API keys.
 
 ## Run Locally
 
