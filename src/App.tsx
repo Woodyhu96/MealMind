@@ -6,6 +6,7 @@ import { DishCard } from "./components/DishCard";
 import { FloatingNotice } from "./components/FloatingNotice";
 import { HomeView } from "./components/HomeView";
 import { ThinkingView } from "./components/ThinkingView";
+import { noodleDishes } from "./data/noodleDishes";
 import { offlineDishes } from "./data/offlineDishes";
 import { useDeviceProfile } from "./hooks/useDeviceProfile";
 import { useLocalPreferences } from "./hooks/useLocalPreferences";
@@ -17,6 +18,7 @@ import { adaptDishesToWeather } from "./utils/weatherAdaptation";
 import { fetchWeatherProfile, getFallbackWeatherProfile } from "./utils/weatherApi";
 
 type View = "home" | "thinking" | "recommendation" | "summary";
+type StapleMode = "rice" | "noodles";
 type PredictionSeed = {
   prompt: string;
   chips: string[];
@@ -80,6 +82,7 @@ export default function App() {
   const [prompt, setPrompt] = useState("");
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const selectedChipsRef = useRef<string[]>([]);
+  const [stapleMode, setStapleMode] = useState<StapleMode>("rice");
   const [nutritionMode, setNutritionMode] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dinnerDishes, setDinnerDishes] = useState<DinnerDish[]>([]);
@@ -121,7 +124,9 @@ export default function App() {
     localStorage.setItem(onlineDishStorageKey, JSON.stringify(onlineDishes));
   }, [onlineDishes]);
 
-  const weatherAwareDishes = useMemo(() => adaptDishesToWeather(offlineDishes, weatherProfile), [weatherProfile]);
+  const weatherAwareRiceDishes = useMemo(() => adaptDishesToWeather(offlineDishes, weatherProfile), [weatherProfile]);
+  const weatherAwareNoodleDishes = useMemo(() => adaptDishesToWeather(noodleDishes, weatherProfile), [weatherProfile]);
+  const weatherAwareDishes = stapleMode === "noodles" ? weatherAwareNoodleDishes : weatherAwareRiceDishes;
   const activeOnlineDishes = useMemo(
     () =>
       currentOnlineDishIds
@@ -131,7 +136,10 @@ export default function App() {
   );
   const recommendationDishes =
     predictionSeed.source === "online" && activeOnlineDishes.length > 0 ? activeOnlineDishes : weatherAwareDishes;
-  const allKnownDishes = useMemo(() => [...weatherAwareDishes, ...onlineDishes], [onlineDishes, weatherAwareDishes]);
+  const allKnownDishes = useMemo(
+    () => [...weatherAwareRiceDishes, ...weatherAwareNoodleDishes, ...onlineDishes],
+    [onlineDishes, weatherAwareNoodleDishes, weatherAwareRiceDishes],
+  );
 
   const rankedDishes = useMemo(
     () =>
@@ -174,10 +182,14 @@ export default function App() {
   };
 
   const generateRecommendations = async () => {
-    const chips = selectedChipsRef.current;
+    const chips = [
+      ...selectedChipsRef.current,
+      stapleMode === "noodles" ? "米粉/面食" : "配碗香米饭",
+    ];
     console.info("[AI Dinner Planner] Mock generation input", {
       prompt,
       selectedChips: chips,
+      stapleMode,
       nutritionMode,
     });
     const source = onlineMode ? "online" : "offline";
@@ -300,6 +312,7 @@ export default function App() {
     setPrompt("");
     setSelectedChips([]);
     selectedChipsRef.current = [];
+    setStapleMode("rice");
     setCurrentIndex(0);
     setRelatedRefreshOffset(0);
     setDinnerDishes([]);
@@ -330,9 +343,11 @@ export default function App() {
           <HomeView
             prompt={prompt}
             selectedChips={selectedChips}
+            stapleMode={stapleMode}
             nutritionMode={nutritionMode}
             onPromptChange={setPrompt}
             onToggleChip={toggleChip}
+            onStapleModeChange={setStapleMode}
             onNutritionModeChange={setNutritionMode}
             onGenerate={generateRecommendations}
             onlineMode={onlineMode}

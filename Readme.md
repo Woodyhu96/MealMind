@@ -6,7 +6,18 @@ Phase 1 is an interactive prototype for GitHub Pages. It uses React, TypeScript,
 
 ## Current Version
 
-V1.4 is the Online-mode foundation release. It adds a local server-side OpenAI proxy for generated dishes, keeps API keys out of the browser bundle, shows a dismissible floating error notice when Online mode is not configured, and tightens fish-protein matching.
+V1.5 is the staple-mode release. It adds a dedicated rice noodle and noodle offline library, lets the user choose between rice-pairing dishes and noodle meals on the first page, and keeps protein/flavor filtering meaningful inside noodle mode.
+
+## V1.5 Update Notes
+
+- Added a separate offline rice noodle/noodle library in `src/data/noodleDishes.ts`.
+- Expanded noodle mode to 52 dishes after coverage cleanup.
+- Added a first-page "主食方向" selector with `配碗香米饭` and `米粉/面食`.
+- `配碗香米饭` keeps using the existing offline dish library; `米粉/面食` switches recommendations to the noodle-specific library.
+- Preserved existing protein, flavor, weather, nutrition, favorites, tray, and final summary behavior.
+- Covered all 36 combinations across the six protein choices and six flavor choices in noodle mode.
+- Verified locally that `米粉/面食 + 鱼 + 黑椒` recommends `黑椒鱼片乌冬`.
+- Updated Online prompt context so future Online generation respects the selected staple direction.
 
 ## V1.4 Update Notes
 
@@ -90,10 +101,11 @@ Dinner planning should feel like asking a calm personal assistant, not browsing 
 
 Published Phase 1 behavior runs in the browser:
 
-- Offline dishes live in `src/data/offlineDishes.ts`.
+- Rice-pairing offline dishes live in `src/data/offlineDishes.ts`.
+- Rice noodle and noodle dishes live in `src/data/noodleDishes.ts`.
 - Preferences live in localStorage.
 - Likes and dislikes update tag scores locally.
-- Recommendation ranking is simulated in `src/utils/preferenceEngine.ts`.
+- Recommendation ranking is simulated in `src/utils/preferenceEngine.ts` and uses the selected staple direction to choose the active offline library.
 - Approximate city/weather context is fetched client-side from keyless public APIs.
 - Shopping lists are generated from local dish data.
 

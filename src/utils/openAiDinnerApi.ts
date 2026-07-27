@@ -116,12 +116,15 @@ export async function generateOnlineDinnerDishesFromOpenAi(input: GenerateOnline
 }
 
 function buildDinnerPrompt({ prompt, selectedChips, nutritionMode, weatherProfile }: GenerateOnlineDinnerInput) {
+  const wantsNoodles = selectedChips.some((chip) => chip.includes("米粉") || chip.includes("面食"));
+
   return [
     `用户自然语言偏好：${prompt || "没有额外描述"}`,
     `用户点击的筛选：${selectedChips.length > 0 ? selectedChips.join("，") : "没有筛选"}`,
     `营养模式：${nutritionMode ? "开启，优先蛋白质和均衡" : "关闭，优先口味和直觉"}`,
     `天气：${weatherProfile.location}，${weatherProfile.temperatureC}°C，${weatherProfile.condition}，${weatherProfile.reason}`,
     "请推荐 6 道中国家常晚餐菜品。第一道必须最符合用户当前偏好。菜品要覆盖主菜、素菜或汤的可能搭配。",
+    wantsNoodles ? "用户已选择“米粉/面食”，所以所有推荐都必须是米粉、河粉、粉丝、乌冬或面条类的一碗主食。" : "用户已选择“配碗香米饭”时，优先推荐适合配米饭的家常菜。",
     "如果用户选择了具体 protein 或口味，推荐菜名、描述、tags 必须显性体现这些元素，不要用谐音或误判，例如鱼香肉丝不是鱼。",
     "每道菜给 3 条推荐理由、3-5 个 tags、4-6 个食材、3-5 步做法。字段必须完整。",
   ].join("\n");

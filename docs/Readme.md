@@ -6,7 +6,7 @@
 
 # Current Version
 
-V1.4 adds the Online-mode foundation: local server-side OpenAI proxy support, structured generated dishes, static-safe offline fallback, dismissible configuration errors, and more accurate fish-protein matching.
+V1.5 adds staple-mode selection and a dedicated 52-dish noodle offline library with full Protein x flavor coverage for noodle-mode recommendations.
 
 ---
 

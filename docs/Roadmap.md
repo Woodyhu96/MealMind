@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current Version: V1.4
+## Current Version: V1.5
 
 - Local-first dinner planner prototype
 - Offline dish library with generated recommendations
@@ -8,6 +8,8 @@
 - Live approximate city and weather context through keyless public APIs
 - Weather-aware recommendation ranking for hot, cold, rainy, and mild conditions
 - Explicit Protein x flavor combination coverage with at least two visibly matching dishes per combination
+- Dedicated rice noodle/noodle offline library with protein and flavor coverage
+- First-page staple direction selector for rice-pairing dishes versus noodle meals
 - Current user selections outrank weather and historical preference signals
 - Local Online mode proxy for OpenAI-generated dishes in development
 - Server-side `.env` API key handling for Online mode
@@ -17,6 +19,16 @@
 - Combined shopping list and cooking steps summary
 - Tray overlay with solid panel and blurred background page
 - GitHub Pages deployment
+
+## V1.5 Release Notes
+
+- Added a separate `src/data/noodleDishes.ts` offline library for rice noodles, noodles, vermicelli, ho fun, and udon-style meals.
+- Added the first-page "主食方向" selector: `配碗香米饭` keeps the existing dish library, while `米粉/面食` switches to the noodle library.
+- Expanded noodle mode to 52 dishes.
+- Verified all 36 Protein x flavor combinations in noodle mode have at least one visible matching dish.
+- Preserved the existing recommendation, related-dish, favorites, tray, shopping-list, and summary flows.
+- Updated Online generation prompt context so generated dishes can respect the selected staple direction.
+- Local demo verification: `米粉/面食 + 鱼 + 黑椒` recommends `黑椒鱼片乌冬`.
 
 ## V1.4 Release Notes
 

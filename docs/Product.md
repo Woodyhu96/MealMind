@@ -8,6 +8,7 @@ The product is intentionally narrow. It is not a recipe search engine, grocery a
 
 - Mobile-first single-page web app
 - Offline recommendation flow with an optional local Online mode proxy
+- First-page staple direction choice between rice-pairing dishes and rice noodle/noodle meals
 - Live approximate weather context with keyless public APIs
 - Local preference learning
 - One dish recommendation at a time
@@ -16,7 +17,7 @@ The product is intentionally narrow. It is not a recipe search engine, grocery a
 
 ## Core Interaction
 
-The user opens the app, describes tonight's dinner mood, taps any useful quick chips, and asks for a recommendation. The app shows a short thinking state, then presents one dinner card at a time. Offline mode ranks local dishes; local Online mode can generate structured dishes through a server-side OpenAI proxy when configured. The user can replace, favorite, or confirm dishes into the dinner tray.
+The user opens the app, chooses whether tonight should be rice-pairing dishes or rice noodle/noodle meals, describes tonight's dinner mood, taps any useful quick chips, and asks for a recommendation. The app shows a short thinking state, then presents one dinner card at a time. Offline mode ranks the selected local dish library; local Online mode can generate structured dishes through a server-side OpenAI proxy when configured. The user can replace, favorite, or confirm dishes into the dinner tray.
 
 ## Preference Learning
 

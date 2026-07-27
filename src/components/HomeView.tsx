@@ -3,7 +3,9 @@ import { Chip } from "./Chip";
 import { Toggle } from "./Toggle";
 import type { WeatherProfile } from "../types/dinner";
 
-const onlineQuickOptions = ["🌶️ 辣一点", "🥩 高蛋白", "⏱️ 30 分钟内", "🍲 想喝汤", "🥗 清淡一点", "🌤️ 适合天气"];
+type StapleMode = "rice" | "noodles";
+
+const onlineQuickOptions = ["🌶️ 辣一点", "🥩 高蛋白", "⏱️ 30 分钟内", "🥗 清淡一点", "🌤️ 适合天气"];
 
 const offlineFilterGroups = [
   {
@@ -16,16 +18,18 @@ const offlineFilterGroups = [
   },
   {
     title: "心情",
-    options: ["🍲 想喝汤", "⚡ 快手省事", "🍚 很下饭", "🌙 晚点轻松吃", "💪 运动后", "🌤️ 适合天气"],
+    options: ["⚡ 快手省事", "🍚 很下饭", "🌙 晚点轻松吃", "💪 运动后", "🌤️ 适合天气"],
   },
 ];
 
 type HomeViewProps = {
   prompt: string;
   selectedChips: string[];
+  stapleMode: StapleMode;
   nutritionMode: boolean;
   onPromptChange: (value: string) => void;
   onToggleChip: (chip: string) => void;
+  onStapleModeChange: (mode: StapleMode) => void;
   onNutritionModeChange: (checked: boolean) => void;
   onGenerate: () => void;
   onlineMode: boolean;
@@ -35,9 +39,11 @@ type HomeViewProps = {
 export function HomeView({
   prompt,
   selectedChips,
+  stapleMode,
   nutritionMode,
   onPromptChange,
   onToggleChip,
+  onStapleModeChange,
   onNutritionModeChange,
   onGenerate,
   onlineMode,
@@ -59,9 +65,33 @@ export function HomeView({
       </div>
 
       <div className="home-controls flex flex-1 flex-col">
+        <section className="mt-9 rounded-[28px] bg-white/82 p-4 shadow-sm">
+          <p className="mb-3 text-sm font-bold text-muted">主食方向</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => onStapleModeChange("rice")}
+              className={`min-h-14 rounded-[20px] px-3 text-sm font-bold transition active:scale-[0.98] ${
+                stapleMode === "rice" ? "bg-ink text-white shadow-sm" : "bg-paper text-ink"
+              }`}
+            >
+              配碗香米饭
+            </button>
+            <button
+              type="button"
+              onClick={() => onStapleModeChange("noodles")}
+              className={`min-h-14 rounded-[20px] px-3 text-sm font-bold transition active:scale-[0.98] ${
+                stapleMode === "noodles" ? "bg-ink text-white shadow-sm" : "bg-paper text-ink"
+              }`}
+            >
+              米粉/面食
+            </button>
+          </div>
+        </section>
+
         {onlineMode ? (
           <>
-            <div className="mt-9 rounded-[32px] bg-white p-4 shadow-soft">
+            <div className="mt-5 rounded-[32px] bg-white p-4 shadow-soft">
               <textarea
                 value={prompt}
                 onChange={(event) => onPromptChange(event.target.value)}
@@ -83,7 +113,7 @@ export function HomeView({
             </div>
           </>
         ) : (
-          <div className="mt-9 space-y-4">
+          <div className="mt-5 space-y-4">
             {offlineFilterGroups.map((group) => (
               <section key={group.title} className="rounded-[28px] bg-white/82 p-4 shadow-sm">
                 <p className="mb-3 text-sm font-bold text-muted">{group.title}</p>
